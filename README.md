@@ -18,7 +18,6 @@ Controller supports actions. Every controller must have at least one:
 ```php
 public indexAction();
 ```
-
 All actions should ends with 'Action' (case!)
 
 #### View
@@ -35,7 +34,6 @@ and render it:
 ```php
 $view->render();
 ```
-
 That's all! See IndexController for example.
 
 #### Model
@@ -44,7 +42,6 @@ If you need a DB connection, extend `Vortex_Model` class and then connect to dat
 ```php
 $this->connect();
 ```
-
 Than you can use:
 ```php
 $this->db
