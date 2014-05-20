@@ -17,6 +17,9 @@ class Vortex_Config {
     private $defaultCnA;
     private $errorCnA;
     private $viewExtension;
+    private $isLayouts;
+    private $layouts;
+    private $defaultLayout;
 
     private $routes;
 
@@ -35,6 +38,8 @@ class Vortex_Config {
         $this->setErrorAction('index');
 
         $this->setViewExtension('tpl');
+        $this->layouts = array();
+        $this->enableLayouts(false);
     }
 
     protected function __clone() { }
@@ -162,4 +167,32 @@ class Vortex_Config {
         $this->viewExtension = $viewExtension;
     }
 
+    public function enableLayouts($bool = true) {
+        $this->isLayouts = ((bool) $bool);
+    }
+
+    public function isLayouts() {
+        return $this->isLayouts;
+    }
+
+    public function getDefaultLayout() {
+        return $this->defaultLayout;
+    }
+
+    public function setDefaultLayout($defaultLayout) {
+        if (in_array($defaultLayout, $this->layouts))
+            $this->defaultLayout = $defaultLayout;
+    }
+
+    public function registerLayout($layout) {
+        if (is_file(APPLICATION_PATH . '/views/layouts/' . $layout . '.' . $this->viewExtension)) {
+            if (count($this->layouts) == 0)
+                $this->defaultLayout = $layout;
+            array_push($this->layouts, $layout);
+        }
+    }
+
+    public function getLayouts() {
+        return $this->layouts;
+    }
 } 

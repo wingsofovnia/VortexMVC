@@ -8,7 +8,7 @@
 
 $configs = Vortex_Config::getInstance();
 
-$configs->setProduction(false);
+$configs->setProduction(true);
 
 $configs->setDefaultController('index');
 $configs->setDefaultAction('index');
@@ -32,3 +32,7 @@ $configs->setDbPassword('');
 $configs->setDbDataBase('VortexMVC');
 
 $configs->setViewExtension('tpl');
+$configs->enableLayouts(true);
+$configs->registerLayout('main');
+$configs->registerLayout('admin');
+$configs->setDefaultLayout('main');

@@ -11,6 +11,7 @@ class Vortex_Logger {
     const WARNING = 1;
     const INFO = 2;
     const DEBUG = 3;
+    private static $desc = array(0 => 'ERROR', 1 => 'WARNING', 2 => 'INFO', 3 => 'DEBUG');
 
     private static $level;
 
@@ -33,35 +34,35 @@ class Vortex_Logger {
             var_dump($body);
             $string = ob_get_clean();
         }
+        $string = self::$desc[$level] . "\n" . $string;
         echo '
-            <table class="vortex-logger ' . $level . '">
-                <tr>
-                    <td align="left">Message level: <span class="level ' . $level . '">' . self::$level . '</span></td>
-                </tr>
-                <tr>
-                    <td class="message ' . $level . '">
-                        <pre>' . $string . '</pre>
-                    </td>
-            </table>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                       <pre>' . $string . '</pre>
+                    </div>
+                    </div>
+                </div>
+            </div>
         ';
     }
 
     public static function error($txt) {
-        self::messageBody($txt, 'error');
+        self::messageBody($txt, self::ERROR);
     }
 
     public static function warning($txt) {
         if (self::$level >= self::WARNING)
-            self::messageBody($txt, 'warning');
+            self::messageBody($txt, self::WARNING);
     }
 
     public static function info($txt) {
         if (self::$level >= self::INFO)
-            self::messageBody($txt, 'info');
+            self::messageBody($txt, self::INFO);
     }
 
     public static function debug($txt) {
         if (self::$level == self::DEBUG)
-            self::messageBody($txt, 'debug');
+            self::messageBody($txt, self::DEBUG);
     }
 } 
