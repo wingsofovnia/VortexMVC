@@ -10,7 +10,9 @@ Router is very simple. No RegExp routes, only full math of URL.
 Check application/application.php for configs.
 
 The autoload URL is:
-    http://yourweb.com/%controller%/%action%/%param_name1%/%param_val1%/...
+```
+http://yourweb.com/%controller%/%action%/%param_name1%/%param_val1%/...
+```
 
 #### Controller
 
