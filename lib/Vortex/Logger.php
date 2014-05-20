@@ -23,7 +23,16 @@ class Vortex_Logger {
             }
     }
 
-    private static function messageBody($text, $level) {
+    private static function messageBody($body, $level) {
+        if (is_array($body))
+            $string = print_r($body, true);
+        else if (is_string($body))
+            $string = $body;
+        else {
+            ob_start();
+            var_dump($body);
+            $string = ob_get_clean();
+        }
         echo '
             <table class="vortex-logger ' . $level . '">
                 <tr>
@@ -31,7 +40,7 @@ class Vortex_Logger {
                 </tr>
                 <tr>
                     <td class="message ' . $level . '">
-                        ' . $text . '
+                        <pre>' . $string . '</pre>
                     </td>
             </table>
         ';

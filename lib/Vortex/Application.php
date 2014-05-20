@@ -57,11 +57,26 @@ class Vortex_Application {
 
     private function registerAutoLoader() {
         spl_autoload_register(function ($classname) {
-            if (substr($classname, -strlen('Model')) === 'Model' && strpos($classname, '_') === false)
-                $path = APPLICATION_PATH . '/models/' . $classname;
-            else
+            /* Is it a lib class? */
+            $libs = glob(LIB_PATH . '/*' , GLOB_ONLYDIR);
+            $libs = array_map(function($path) {return basename($path);}, $libs);
+
+            $regexp = '/^[';
+            foreach ($libs as $lib)
+                $regexp .= $lib . '|';
+            $regexp = rtrim($regexp, '|') . ']/';
+            $isLib = preg_match($regexp, $classname) > 0;
+
+            if ($isLib) {
                 $path = LIB_PATH . '/' . str_replace('_', DIRECTORY_SEPARATOR, $classname);
-            echo $path.'<br/>';
+            } else {
+                $appClass = $classname . 's';
+                $appClass = preg_split('/(?=[A-Z])/', $appClass);
+                $appClass = array_values(array_filter($appClass));
+
+                $dir = end($appClass);
+                $path = APPLICATION_PATH . '/' . $dir . '/' . $classname;
+            }
             require_once($path . '.php');
         });
     }

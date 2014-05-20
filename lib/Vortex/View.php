@@ -12,7 +12,8 @@ class Vortex_View {
 
     public function __construct($name) {
         $this->data = new Vortex_Registry();
-        $path = APPLICATION_PATH . '/views/' . ucfirst(strtolower($name)) . 'View.tpl';
+        $path = APPLICATION_PATH . '/views/' . ucfirst(strtolower($name)) . 'View';
+        $path .= '.' . Vortex_Config::getInstance()->getViewExtension();
         if (!file_exists($path))
             throw new Vortex_Exception_ViewError("View don't exists!");
         $this->path = $path;

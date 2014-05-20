@@ -30,3 +30,5 @@ $configs->setDbHost('localhost');
 $configs->setDbUserName('root');
 $configs->setDbPassword('');
 $configs->setDbDataBase('VortexMVC');
+
+$configs->setViewExtension('tpl');

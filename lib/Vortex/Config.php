@@ -16,6 +16,7 @@ class Vortex_Config {
     private $state;
     private $defaultCnA;
     private $errorCnA;
+    private $viewExtension;
 
     private $routes;
 
@@ -24,8 +25,16 @@ class Vortex_Config {
     private $dbUserName;
     private $dbPassword;
     private $dbDataBase;
+
     protected function __construct() {
-        $this->registry = new Vortex_Registry();
+        $this->setState(Vortex_Config::DEVELOPMENT);
+        $this->setDefaultController('index');
+        $this->setDefaultAction('index');
+
+        $this->setErrorController('error');
+        $this->setErrorAction('index');
+
+        $this->setViewExtension('tpl');
     }
 
     protected function __clone() { }
@@ -144,4 +153,13 @@ class Vortex_Config {
         else if ($flag === false)
             $this->setState(self::DEVELOPMENT);
     }
+
+    public function getViewExtension() {
+        return $this->viewExtension;
+    }
+
+    public function setViewExtension($viewExtension) {
+        $this->viewExtension = $viewExtension;
+    }
+
 } 

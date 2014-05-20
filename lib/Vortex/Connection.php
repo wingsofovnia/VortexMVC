@@ -6,7 +6,7 @@
  * Date: 19-May-14
  * Time: 23:48
  */
-class Vortex_DataBase {
+class Vortex_Connection {
     private static $_instance = null;
 
     private $driver;
