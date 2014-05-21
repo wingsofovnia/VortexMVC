@@ -10,7 +10,7 @@ class IndexController extends Vortex_Controller {
 
     public function indexAction() {
         $model = new BeanModel();
-        $model->testConnection();
+        //$model->testConnection();
 
 
         $view = new Vortex_View('index');
