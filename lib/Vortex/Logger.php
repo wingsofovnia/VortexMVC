@@ -34,15 +34,16 @@ class Vortex_Logger {
             var_dump($body);
             $string = ob_get_clean();
         }
-        $string = self::$desc[$level] . "\n" . $string;
         echo '
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-md-12">
-                       <pre>' . $string . '</pre>
-                    </div>
-                    </div>
+            <div style="margin:5px;padding:5px;border:1px solid #D5D5D5;border-radius:3px;background:#F6F6F6;">
+                <div style="float:left">
+                    <small>Message level:</small> <strong>' . self::$desc[$level] . '</strong>
                 </div>
+                <div style="float:right; margin-bottom:5px">
+                    <small>Time:</small> <strong>' . date("H:i:s") . '</strong>
+                </div>
+                <hr style="margin:5px 0; clear:both;"/>
+                <pre style="margin: 5px 0">' . $string . '</pre>
             </div>
         ';
     }

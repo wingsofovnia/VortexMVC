@@ -12,7 +12,7 @@ class IndexController extends Vortex_Controller {
         $model = new BeanModel();
         //$model->testConnection();
 
-
+        //$this->response->setHeader('Content-Type', 'text/plain');
         $view = new Vortex_View('index');
         $view->data->firstWords = 'Hello World!';
         $view->render();

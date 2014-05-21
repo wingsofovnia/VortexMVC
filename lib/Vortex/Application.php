@@ -20,6 +20,7 @@ class Vortex_Application {
     }
 
     public function run() {
+        ob_start();
         $this->initConfigs();
         $this->initRouter();
 
@@ -41,6 +42,9 @@ class Vortex_Application {
         if (is_callable(array($controller, $action)) == false)
             $action = Vortex_Config::getInstance()->getDefaultAction() . 'Action';
         $controller->$action();
+        $content = ob_get_clean();
+        $this->response->setBody($content);
+        $this->response->sendPacket();
     }
 
     private function initRouter() {
