@@ -16,10 +16,18 @@ class Vortex_Global {
 
     protected function __clone() { }
 
-    static public function getInstance() {
+    static private function getInstance() {
         if (is_null(self::$_instance)) {
             self::$_instance = new self();
         }
         return self::$_instance->registry;
+    }
+
+    static public function set($key, $value) {
+        self::getInstance()->$key = $value;
+    }
+
+    static public function get($key) {
+        return self::getInstance()->$key;
     }
 } 
