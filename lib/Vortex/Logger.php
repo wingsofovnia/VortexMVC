@@ -1,11 +1,14 @@
 <?php
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 23:16
  */
 
+/**
+ * Class Vortex_Logger
+ * A simple logger implementation
+ */
 class Vortex_Logger {
     const ERROR = 0;
     const WARNING = 1;
@@ -15,15 +18,20 @@ class Vortex_Logger {
 
     private static $level;
 
+    /**
+     * Sets a logging level
+     * @param int $lvl level (0 ~ 3) from Vortex_Logger::ERROR to Vortex_Logger::DEBUG
+     */
     public static function level($lvl) {
-            if ($lvl == self::ERROR ||
-                    $lvl == self::WARNING ||
-                        $lvl == self::INFO ||
-                            $lvl == self::DEBUG) {
-                self::$level = $lvl;
-            }
+        if (isset(self::$desc[$lvl]))
+            self::$level = $lvl;
     }
 
+    /**
+     * Prints the logger message
+     * @param string $body message to print
+     * @param int $level a logger level
+     */
     private static function messageBody($body, $level) {
         if (is_array($body))
             $string = print_r($body, true);
@@ -48,20 +56,36 @@ class Vortex_Logger {
         ';
     }
 
+    /**
+     * Prints message as an error
+     * @param string $txt message
+     */
     public static function error($txt) {
         self::messageBody($txt, self::ERROR);
     }
 
+    /**
+     * Prints message as a warning
+     * @param string $txt message
+     */
     public static function warning($txt) {
         if (self::$level >= self::WARNING)
             self::messageBody($txt, self::WARNING);
     }
 
+    /**
+     * Prints message as info text
+     * @param string $txt message
+     */
     public static function info($txt) {
         if (self::$level >= self::INFO)
             self::messageBody($txt, self::INFO);
     }
 
+    /**
+     * Prints message as debug message
+     * @param string $txt message
+     */
     public static function debug($txt) {
         if (self::$level == self::DEBUG)
             self::messageBody($txt, self::DEBUG);

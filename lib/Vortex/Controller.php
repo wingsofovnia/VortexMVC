@@ -1,22 +1,36 @@
 <?php
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 17:55
  */
 
+/**
+ * Class Vortex_Controller
+ * A general class of all controllers
+ */
 abstract class Vortex_Controller {
     protected $request;
     protected $response;
 
-    public function __construct($request, $response) {
+    /**
+     * Init constructor
+     * @param Vortex_Request $request a request wrapper
+     * @param Vortex_Response $response a response wrapper
+     */
+    public final function __construct($request, $response) {
         $this->request = $request;
         $this->response = $response;
         $this->init();
     }
 
+    /**
+     * A child quasi-constructor
+     */
     public function init() {}
 
+    /**
+     * A must-have action for all controllers
+     */
     abstract public function indexAction();
 } 

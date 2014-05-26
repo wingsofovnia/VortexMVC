@@ -1,12 +1,18 @@
 <?php
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
  * Time: 20:22
  */
 
+/**
+ * Class Vortex_Response
+ * This class implements a wrapper of HTTP Response PACKET with addition
+ * extended functionality
+ */
 class Vortex_Response {
+    /* Status codes */
     const STATUS_CONTINUE_100 = 100;
     const STATUS_SWITCHING_PROTOCOLS = 101;
     const STATUS_PROCESSING = 102;
@@ -55,6 +61,7 @@ class Vortex_Response {
     const STATUS_LOOP_DETECTED = 508;
     const STATUS_BANDWIDTH_LIMIT_EXCEEDED_509 = 509;
 
+    /* Descriptions of status codes */
     protected static $messages = array(
         // Informational 1xx
         100 => 'Continue',
@@ -114,49 +121,87 @@ class Vortex_Response {
         509 => 'Bandwidth Limit Exceeded'
     );
 
-    // HTTP Response Packet
+    /* HTTP Response Packet */
     protected $version = 'HTTP/1.1';
     protected $statusCode;
     protected $reason;
     protected $headers = array();
     protected $body;
 
+    /**
+     * Gets a body of a http packet
+     * @return string a body
+     */
     public function getBody() {
         return $this->body;
     }
 
+    /**
+     * Sets a body of a http packet
+     * @param string $body a body value
+     */
     public function setBody($body) {
         $this->body = (string)$body;
     }
 
+    /**
+     * Gets an array of all headers of this packet
+     * @return array assoc array of headers
+     */
     public function getHeaders() {
         return $this->headers;
     }
 
+    /**
+     * Adds new header to http response packet
+     * @param string $name header name
+     * @param string $value header value
+     */
     public function setHeader($name, $value) {
         $this->headers[(string)$name] = (string)$value;
     }
 
+    /**
+     * Gets a current status code
+     * @return int a status code
+     */
     public function getStatusCode() {
         return $this->statusCode;
     }
 
+    /**
+     * Sets a response status code
+     * @param int $statusCode a status code
+     * @throws Vortex_Exception_ResponseError if status code is wrong (100 ~ 599 supports only)
+     */
     public function setStatusCode($statusCode) {
         if ($statusCode >= 600 || $statusCode < 100)
             throw new Vortex_Exception_ResponseError('Unknown status code (100 ~ 599 only)!');
         $this->statusCode = $statusCode;
     }
 
+    /**
+     * Gets a version of HTTP from packet's status line
+     * @return string a version
+     */
     public function getHttpVersion() {
         return $this->version;
     }
 
+    /**
+     * Sets a version of HTTP from packet's status line
+     * @param string $version (1.0 and 1.1 allowed)
+     * @throws Vortex_Exception_ResponseError if version is unsupported
+     */
     public function setHttpVersion($version) {
         if ($version != '1.0' || $version != '1.1')
             throw new Vortex_Exception_ResponseError('Supported only 1.0 and 1.1 versions!');
         $this->version = 'HTTP/' . $version;
     }
 
+    /**
+     * Prepares headers and sends a packet's body
+     */
     public function sendPacket() {
          /***************************
          *          PACKET          *

@@ -1,11 +1,15 @@
 <?php
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 18:29
  */
 
+/**
+ * Class Vortex_Router
+ * This class parses a URL and routes the application.
+ * In other words, decide what controller should be called.
+ */
 class Vortex_Router {
     private $controller;
     private $action;
@@ -13,14 +17,22 @@ class Vortex_Router {
     private $url;
     private $routes;
 
+    /**
+     * Inits defaults
+     */
     public function __construct() {
-        $this->controller = 'index';
-        $this->action = 'index';
+        $this->controller = Vortex_Config::getInstance()->getDefaultController();
+        $this->action = Vortex_Config::getInstance()->getDefaultAction();
         $this->params = array();
         $this->url = '';
         $this->routes = array();
     }
 
+    /**
+     * Process the url.
+     * This method doesn't actually parse url, but decide if it
+     * should be parsed or predefined route could be used.
+     */
     public function parse() {
         if (!empty($this->url)) {
             if (isset($this->routes[$this->url])) {
@@ -34,6 +46,10 @@ class Vortex_Router {
         }
     }
 
+    /**
+     * Adds predefined route
+     * @param array $route an assoc-array of url, controller & action
+     */
     public function registerRoute($route) {
         $required = array('url', 'controller', 'action');
         if (count(array_intersect_key(array_flip($required), $route)) === count($required)) {
@@ -41,15 +57,20 @@ class Vortex_Router {
             unset($route['url']);
             $this->routes[$url] = $route;
         }
-        return $this;
     }
 
+    /**
+     * Deletes predefined route
+     * @param string $url url to delete
+     */
     public function unregisterRoute($url) {
         if (array_key_exists($url, $this->routes))
             unset($this->routes[$url]);
-        return $this;
     }
 
+    /**
+     * Parses the URL
+     */
     private function parseURL() {
         $args = explode('/', $this->url);
         $args = array_filter($args);
@@ -73,27 +94,42 @@ class Vortex_Router {
         }
     }
 
-    public function getAction() {
-        return $this->action;
-    }
-
+    /**
+     * Gets a parsed name of controller
+     * @return string name of controller
+     */
     public function getController() {
         return $this->controller;
     }
 
+    /**
+     * Gets a parsed name of action
+     * @return string action name
+     */
+    public function getAction() {
+        return $this->action;
+    }
+
+    /**
+     * Gets a parsed array of params
+     * @return array a set of params
+     */
     public function getParams() {
         return $this->params;
     }
 
+    /**
+     * Sets an URL to parse
+     * @param string $url an URL address
+     */
     public function setUrl($url) {
         $this->url = $url;
         $this->cleanURL();
     }
 
-    public function getUrl() {
-        return $this->url;
-    }
-
+    /**
+     * Service method to clean URL from HOST name and special chars
+     */
     private function cleanURL() {
         $url = urldecode($this->url);
         if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
@@ -101,7 +137,6 @@ class Vortex_Router {
         if (strlen($url) > 1)
             $url = rtrim($url, '/');
         $url = preg_replace('/\s+/', '', $url);
-        $url = preg_replace('/[^A-Za-z0-9\-]/', '', $url);
-        return $url;
+        $this->url = preg_replace('/[^A-Za-z0-9\-]/', '', $url);
     }
 } 

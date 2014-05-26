@@ -1,17 +1,25 @@
 <?php
-
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 18:11
+ */
+
+/**
+ * Class Vortex_Application
+ * This one prepare engine for MVC work, inits router and autoloader.
+ * Also, this class operate with application output: it waits until MVC has
+ * finished it's work, and then call Vortex_Response to send a packet.
  */
 class Vortex_Application {
     private $router;
     private $request;
     private $response;
-    private $configs;
-
+    private $config;
+    
+    /**
+     * Init constructor
+     */
     public function __construct() {
         $this->registerAutoLoader();
         $this->router = new Vortex_Router();
@@ -19,46 +27,71 @@ class Vortex_Application {
         $this->response = new Vortex_Response();
     }
 
+    /**
+     * Run the application
+     * @throws Vortex_Exception_ControllerError if controller doesn't exists (and PRODUCTION state = 0)
+     */
     public function run() {
         ob_start();
         $this->initConfigs();
         $this->initRouter();
 
         $this->request->addParams($this->router->getParams());
-        $controllerName = $this->router->getController() . 'Controller';
-        $inc = APPLICATION_PATH . '/controllers/' . $controllerName . '.php';
-        if (!file_exists($inc)) {
-            if (!Vortex_Config::getInstance()->isProduction())
-                throw new Vortex_Exception_ControllerError('Controller doesn\'t exists!');
-            else {
-                $controllerName = Vortex_Config::getInstance()->getDefaultController() . 'Controller';
-                $inc = APPLICATION_PATH . '/controllers/' . $controllerName . '.php';
+        try {
+            $this->initAction($this->router->getController(), $this->router->getAction());
+        } catch (Vortex_Exception_InitError $e) {
+            try {
+                $this->initAction($this->config->getErrorController(), $this->config->getErrorAction());
+            } catch (Vortex_Exception_InitError $e) {
+                throw $e;
             }
         }
-        Vortex_Logger::debug("INCLUDING CONTROLLER :: " . $inc);
-        include $inc;
-        $controller = new $controllerName($this->request, $this->response);
-        $action = $this->router->getAction() . 'Action';
-        if (is_callable(array($controller, $action)) == false)
-            $action = Vortex_Config::getInstance()->getDefaultAction() . 'Action';
-        $controller->$action();
         $content = ob_get_clean();
         $this->response->setBody($content);
         $this->response->sendPacket();
     }
 
+    /**
+     * Inits router configs and parsing URL
+     */
     private function initRouter() {
         $this->router->setUrl($_SERVER['REQUEST_URI']);
-        $routes = Vortex_Config::getInstance()->getRoutes();
+        $routes = $this->config->getRoutes();
         for ($i = 0; $i < count($routes); $i++)
             $this->router->registerRoute($routes[$i]);
         $this->router->parse();
     }
 
+    /**
+     * Includes application.php configs
+     */
     private function initConfigs() {
         include_once APPLICATION_PATH . '/application.php';
+        $this->config = Vortex_Config::getInstance();
     }
 
+    /**
+     * Runs an action of controller
+     * @param string $controller name of controller
+     * @param string $action name of action
+     * @throws Vortex_Exception_InitError if controller or action doesn't exists
+     */
+    private function initAction($controller, $action) {
+        $controller .= 'Controller';
+        $controllerPath = APPLICATION_PATH . '/controllers/' . $controller . '.php';
+        if (!file_exists($controllerPath))
+            throw new Vortex_Exception_InitError('Controller does\'t exists!');
+        require_once $controllerPath;
+        $controller = new $controller($this->request, $this->response);
+        $action .= 'Action';
+        if (is_callable(array($controller, $action)) == false)
+            throw new Vortex_Exception_InitError('Action does\'t exists!');
+        $controller->$action();
+    }
+
+    /**
+     * Registers AutoLoader with `spl_autoload_register`
+     */
     private function registerAutoLoader() {
         spl_autoload_register(function ($classname) {
             /* Is it a lib class? */
@@ -84,6 +117,5 @@ class Vortex_Application {
             require_once($path . '.php');
         });
     }
-
 }
 

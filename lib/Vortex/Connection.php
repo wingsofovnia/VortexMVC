@@ -1,10 +1,15 @@
 <?php
-
 /**
- * Project: OwnMVC
+ * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 23:48
+ */
+
+/**
+ * Class Vortex_Connection
+ * This class makes connection to database
+ * using PDO and that wraps it into FluentPDO
+ * @link https://github.com/lichtner/fluentpdo
  */
 class Vortex_Connection {
     private static $_instance = null;
@@ -16,6 +21,10 @@ class Vortex_Connection {
     private $db;
     private $connection;
 
+    /**
+     * Init constructor. Reads values from Vortex_Config
+     * and making attempt to connect
+     */
     protected function __construct() {
         $configs = Vortex_Config::getInstance();
         $this->driver = $configs->getDbPDODriver();
@@ -27,6 +36,10 @@ class Vortex_Connection {
         $this->connect();
     }
 
+    /**
+     * Connects to database and making FluetPDO instance
+     * @throws Vortex_Exception_DBError if connection failed
+     */
     private function connect() {
         try {
             $pdo = new PDO($this->driver . ':host=' . $this->host . ';dbname=' . $this->db, $this->user, $this->password);
@@ -40,6 +53,10 @@ class Vortex_Connection {
 
     protected function __clone() { }
 
+    /**
+     * Singleton instance getter
+     * @return FluentPDO instance
+     */
     static public function getInstance() {
         if (is_null(self::$_instance)) {
             self::$_instance = new self();
