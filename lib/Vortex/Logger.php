@@ -10,11 +10,21 @@
  * A simple logger implementation
  */
 class Vortex_Logger {
+    const EXCEPTION = -1;
     const ERROR = 0;
     const WARNING = 1;
     const INFO = 2;
     const DEBUG = 3;
-    private static $desc = array(0 => 'ERROR', 1 => 'WARNING', 2 => 'INFO', 3 => 'DEBUG');
+    private static $desc = array(self::EXCEPTION    => 'EXCEPTION',
+                                 self::ERROR        => 'ERROR',
+                                 self::WARNING      => 'WARNING',
+                                 self::INFO         => 'INFO',
+                                 self::DEBUG        => 'DEBUG');
+    private static $colors = array(self::EXCEPTION    => '#BC7864',
+                                   self::ERROR        => '#FB5F5F',
+                                   self::WARNING      => '#F3FF61',
+                                   self::INFO         => '#FFECC6',
+                                   self::DEBUG        => '#F6F6F6');
 
     private static $level;
 
@@ -42,8 +52,9 @@ class Vortex_Logger {
             var_dump($body);
             $string = ob_get_clean();
         }
+        $color = self::$colors[$level];
         echo '
-            <div style="margin:5px;padding:5px;border:1px solid #D5D5D5;border-radius:3px;background:#F6F6F6;">
+            <div style="margin:5px;padding:5px;border:1px solid #D5D5D5;border-radius:3px;background:' . $color . ';">
                 <div style="float:left">
                     <small>Message level:</small> <strong>' . self::$desc[$level] . '</strong>
                 </div>
@@ -62,6 +73,10 @@ class Vortex_Logger {
      */
     public static function error($txt) {
         self::messageBody($txt, self::ERROR);
+    }
+
+    public static function exception($txt) {
+        self::messageBody($txt, self::EXCEPTION);
     }
 
     /**

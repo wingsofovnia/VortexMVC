@@ -7,8 +7,8 @@
 
 /**
  * Class Vortex_Connection
- * This class makes connection to database
- * using PDO and that wraps it into FluentPDO
+ * This class establishes connection to database
+ * using PDO and wraps it with FluentPDO
  * @link https://github.com/lichtner/fluentpdo
  */
 class Vortex_Connection {
@@ -38,26 +38,26 @@ class Vortex_Connection {
 
     /**
      * Connects to database and making FluetPDO instance
-     * @throws Vortex_Exception_DBError if connection failed
+     * @throws PDOException if connection failed
      */
     private function connect() {
-        try {
-            $pdo = new PDO($this->driver . ':host=' . $this->host . ';dbname=' . $this->db, $this->user, $this->password);
-            include "lib/FluentPDO/FluentPDO.php";
-            $this->connection = new FluentPDO($pdo);
-            Vortex_Logger::debug("Connected to database!");
-        } catch (PDOException $e) {
-            throw new Vortex_Exception_DBError("Can't connect to DB!", 0, $e);
-        }
+        $pdo = new PDO($this->driver . ':host=' . $this->host . ';dbname=' . $this->db, $this->user, $this->password);
+        include LIB_PATH . '/FluentPDO/FluentPDO.php';
+        $this->connection = new FluentPDO($pdo);
+        if (!Vortex_Config::getInstance()->isProduction())
+            $this->connection->debug = function($BaseQuery) {
+                Vortex_Logger::debug("Query: " . $BaseQuery->getQuery(false) . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\nRowCount: " . $BaseQuery->getResult()->rowCount() . "\n");
+            };
+        Vortex_Logger::debug("Connected to database!");
     }
 
     protected function __clone() { }
 
     /**
-     * Singleton instance getter
+     * Gets a FluentPDO connection
      * @return FluentPDO instance
      */
-    static public function getInstance() {
+    public static function getConnection() {
         if (is_null(self::$_instance)) {
             self::$_instance = new self();
         }

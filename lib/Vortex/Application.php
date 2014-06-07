@@ -7,9 +7,9 @@
 
 /**
  * Class Vortex_Application
- * This one prepare engine for MVC work, inits router and autoloader.
- * Also, this class operate with application output: it waits until MVC has
- * finished it's work, and then call Vortex_Response to send a packet.
+ * This one is an engine and class loader and configurator.
+ * Class controls an output, ask @see Vortex_Router for path and
+ * starts particular controller's action.
  */
 class Vortex_Application {
     private $router;
@@ -22,6 +22,7 @@ class Vortex_Application {
      */
     public function __construct() {
         $this->registerAutoLoader();
+        $this->registerHandlers();
         $this->router = new Vortex_Router();
         $this->request = new Vortex_Request();
         $this->response = new Vortex_Response();
@@ -115,6 +116,15 @@ class Vortex_Application {
                 $path = APPLICATION_PATH . '/' . $dir . '/' . $classname;
             }
             require_once($path . '.php');
+        });
+    }
+
+    private function registerHandlers() {
+        set_exception_handler(function($e) {
+           Vortex_Logger::exception($e->__toString());
+        });
+        set_error_handler(function($code, $message, $file, $line) {
+            Vortex_Logger::error($message . "\n" . $file . ' at line ' . $line);
         });
     }
 }

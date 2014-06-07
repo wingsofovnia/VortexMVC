@@ -16,6 +16,6 @@ abstract class Vortex_Model {
      * Connects to database
      */
     protected function connect() {
-        $this->db = Vortex_Connection::getInstance();
+        $this->db = Vortex_Connection::getConnection();
     }
 } 

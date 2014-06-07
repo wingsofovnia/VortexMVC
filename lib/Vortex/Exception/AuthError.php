@@ -6,4 +6,4 @@
  * Time: 22:18
  */
 
-class Vortex_Exception_DBError extends Exception { }
+class Vortex_Exception_AuthError extends Exception { }

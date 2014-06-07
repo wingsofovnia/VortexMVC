@@ -78,7 +78,8 @@ class Vortex_Config {
      */
     public function setDbPDODriver($dbPDODriver) {
         $availableDrivers = PDO::getAvailableDrivers();
-        if (!in_array($dbPDODriver, $availableDrivers)) throw new Vortex_Exception_DBError("No <$dbPDODriver> found!");
+        if (!in_array($dbPDODriver, $availableDrivers))
+            throw new Vortex_Exception_DBError("No <$dbPDODriver> found!");
         $this->dbPDODriver = $dbPDODriver;
     }
 
@@ -93,8 +94,11 @@ class Vortex_Config {
     /**
      * Sets current DB host
      * @param string $dbHost host address
+     * @throws Vortex_Exception_IllegalArgument if param is empty
      */
     public function setDbHost($dbHost) {
+        if (empty($dbHost))
+            throw new Vortex_Exception_IllegalArgument('Db host name should be not empty!');
         $this->dbHost = $dbHost;
     }
 

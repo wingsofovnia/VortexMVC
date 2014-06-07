@@ -123,7 +123,7 @@ class Vortex_Response {
 
     /* HTTP Response Packet */
     protected $version = 'HTTP/1.1';
-    protected $statusCode;
+    protected $statusCode = 200;
     protected $reason;
     protected $headers = array();
     protected $body;
@@ -214,7 +214,6 @@ class Vortex_Response {
          * ------------------------ *
          *       MESSAGE BODY       *   // The data
          ***************************/
-
         $statusLine = $this->version . ' ' . $this->statusCode . ' ' . self::$messages[$this->statusCode];
         header($statusLine, true, $this->statusCode);
 
@@ -222,5 +221,10 @@ class Vortex_Response {
             header($name . ':' . $value);
 
         echo $this->body;
+    }
+
+    public function redirect($url, $code = Vortex_Response::STATUS_FOUND_302) {
+        $this->setHeader('Location', $url);
+        $this->setStatusCode($code);
     }
 } 
