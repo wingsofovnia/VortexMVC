@@ -14,8 +14,4 @@ class IndexController extends Vortex_Controller {
         $view->data->firstWords = 'Hello World!';
         $view->render();
     }
-
-    public function didAction() {
-        echo "oups!";
-    }
 }

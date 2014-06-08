@@ -106,10 +106,14 @@ class Vortex_Database_PDO extends FluentPDO {
                            ->select($attr_t . '.*, ' . $attr_t . '.name AS prop_name')
                            ->leftJoin($types_t . ' ON ' . $attr_t . '.object_type_id = ' . $types_t . '.object_type_id')
                            ->select($types_t . '.*');
-        $checksum = md5($objectData->getQuery(false));
+        $checksum = md5($objectData->getQuery(false) . serialize($objectData->getParameters()));
         $data = $this->cache->load($checksum);
-        $objectData = $data ? $data : $objectData->fetchAll();
-        $this->cache->save($checksum, $objectData);
+        if ($data) {
+            $objectData = $data;
+        } else {
+            $objectData = $objectData->fetchAll();
+            $this->cache->save($checksum, $objectData);
+        }
 
         if (!$objectData)
             throw new Vortex_Exception_DatabaseError('No such object id!');
@@ -147,11 +151,11 @@ class Vortex_Database_PDO extends FluentPDO {
         $obj_t = $this->config->getMetaObjectTable();
         $param_t = $this->config->getMetaParamsTable();
 
-        $query = $this->from($types_t)
+        $query = $this->from($param_t)
+                      ->leftJoin($attr_t . ' ON ' . $param_t . '.attr_id = ' . $attr_t . '.attr_id')
+                      ->leftJoin($obj_t . ' ON ' . $param_t . '.object_id = ' . $obj_t . '.object_id')
+                      ->leftJoin($types_t . ' ON ' . $obj_t . '.object_type_id = ' . $types_t . '.object_type_id')
                       ->where($types_t . '.name', $objectType)
-                      ->leftJoin($obj_t . ' ON ' . $types_t . '.object_type_id = ' . $obj_t . '.object_type_id')
-                      ->leftJoin($attr_t . ' ON ' . $types_t . '.object_type_id = ' . $attr_t . '.object_type_id')
-                      ->leftJoin($param_t . ' ON ' . $attr_t . '.attr_id = ' . $param_t . '.attr_id')
                       ->select($obj_t . '.*');
         foreach ($params as $key => $value) {
             $query->where($attr_t . '.name', $key);
@@ -159,7 +163,15 @@ class Vortex_Database_PDO extends FluentPDO {
             $query->where($param_t . '.' . $valueField, $value);
         }
 
-        $objects = $query->fetchAll();
+        $checksum = md5($query->getQuery(false) . serialize($query->getParameters()));
+        $data = $this->cache->load($checksum);
+        if ($data) {
+            $objects = $data;
+        } else {
+            $objects = $query->fetchAll();
+            $this->cache->save($checksum, $objects);
+        }
+
         if (!$objects)
             return false;
         if (count($objects) == 1)
