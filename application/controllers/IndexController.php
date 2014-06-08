@@ -9,8 +9,6 @@
 class IndexController extends Vortex_Controller {
 
     public function indexAction() {
-        $model = new BeanModel();
-        //$model->testConnection();
         //$this->response->setHeader('Content-Type', 'text/plain');
         $view = new Vortex_View('index');
         $view->data->firstWords = 'Hello World!';

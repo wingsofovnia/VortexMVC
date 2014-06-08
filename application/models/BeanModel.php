@@ -6,8 +6,19 @@
  * Time: 01:10
  */
 
-class BeanModel extends Vortex_Model {
-    public function testConnection() {
-        $this->connect();
+class BeanModel implements Vortex_Service_ISerializable {
+    protected $protected;
+    protected $protInited = 20;
+    private $private;
+    public $public;
+
+    public function __construct() {
+        $this->protected = 'PROT!';
+        $this->private = 'PRIV!';
+        $this->public = 'HERE I AM!';
     }
-} 
+
+    public function toString() {
+        return 'obj = ' . $this->private . '; ' . $this->protected . '; ' . $this->public;
+    }
+}

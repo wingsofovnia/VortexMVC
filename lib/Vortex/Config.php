@@ -12,7 +12,7 @@
  * Note! Config class should be configured before engine start,
  * than all changes will be ignored.
  */
-class Vortex_Config {
+final class Vortex_Config {
     private static $_instance = null;
 
     const DEVELOPMENT = 'dev';
@@ -34,6 +34,11 @@ class Vortex_Config {
     private $dbPassword;
     private $dbDataBase;
 
+    private $MetaObjectTypesTable;
+    private $MetaObjectTable;
+    private $MetaAttributesTable;
+    private $MetaParamsTable;
+
     /**
      * Init constructor with some default values
      */
@@ -48,6 +53,11 @@ class Vortex_Config {
         $this->setViewExtension('tpl');
         $this->layouts = array();
         $this->enableLayouts(false);
+
+        $this->setMetaAttributesTable('Meta_Attributes');
+        $this->setMetaObjectTable('Meta_Objects');
+        $this->setMetaObjectTypesTable('Meta_ObjectTypes');
+        $this->setMetaParamsTable('Meta_Params');
     }
 
     protected function __clone() { }
@@ -331,5 +341,37 @@ class Vortex_Config {
      */
     public function getLayouts() {
         return $this->layouts;
+    }
+
+    public function setMetaAttributesTable($MetaAttributesTable) {
+        $this->MetaAttributesTable = $MetaAttributesTable;
+    }
+
+    public function setMetaObjectTable($MetaObjectTable) {
+        $this->MetaObjectTable = $MetaObjectTable;
+    }
+
+    public function setMetaObjectTypesTable($MetaObjectTypesTable) {
+        $this->MetaObjectTypesTable = $MetaObjectTypesTable;
+    }
+
+    public function setMetaParamsTable($MetaParamsTable) {
+        $this->MetaParamsTable = $MetaParamsTable;
+    }
+
+    public function getMetaAttributesTable() {
+        return $this->MetaAttributesTable;
+    }
+
+    public function getMetaObjectTable() {
+        return $this->MetaObjectTable;
+    }
+
+    public function getMetaObjectTypesTable() {
+        return $this->MetaObjectTypesTable;
+    }
+
+    public function getMetaParamsTable() {
+        return $this->MetaParamsTable;
     }
 } 

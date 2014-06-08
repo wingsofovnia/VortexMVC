@@ -69,7 +69,7 @@ class Vortex_Logger {
 
     /**
      * Prints message as an error
-     * @param string $txt message
+     * @param mixed $txt message
      */
     public static function error($txt) {
         self::messageBody($txt, self::ERROR);
@@ -81,7 +81,7 @@ class Vortex_Logger {
 
     /**
      * Prints message as a warning
-     * @param string $txt message
+     * @param mixed $txt message
      */
     public static function warning($txt) {
         if (self::$level >= self::WARNING)
@@ -90,7 +90,7 @@ class Vortex_Logger {
 
     /**
      * Prints message as info text
-     * @param string $txt message
+     * @param mixed $txt message
      */
     public static function info($txt) {
         if (self::$level >= self::INFO)
@@ -99,10 +99,19 @@ class Vortex_Logger {
 
     /**
      * Prints message as debug message
-     * @param string $txt message
+     * @param mixed $txt message
      */
     public static function debug($txt) {
         if (self::$level == self::DEBUG)
             self::messageBody($txt, self::DEBUG);
+    }
+
+    /**
+     * Prints debug message and die!
+     * @param mixed $txt message
+     */
+    public static function dump($txt) {
+        self::messageBody($txt, self::DEBUG);
+        die();
     }
 } 

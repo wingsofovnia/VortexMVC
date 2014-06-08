@@ -12,4 +12,5 @@
             text-align: center">
     <img src="/public/img/vortex-logo.png" width="128px" height="149px">
     <h1 style="color: #0F7EDE;">VortexMVC <small style="color:#7F7F7F;">I'm ready to go!</small></h1>
+    <?=$this->data->firstWords ?>
 </div>

@@ -11,7 +11,7 @@
  * using PDO and wraps it with FluentPDO
  * @link https://github.com/lichtner/fluentpdo
  */
-class Vortex_Connection {
+class Vortex_Database_Connection {
     private static $_instance = null;
 
     private $driver;
@@ -42,11 +42,10 @@ class Vortex_Connection {
      */
     private function connect() {
         $pdo = new PDO($this->driver . ':host=' . $this->host . ';dbname=' . $this->db, $this->user, $this->password);
-        include LIB_PATH . '/FluentPDO/FluentPDO.php';
-        $this->connection = new FluentPDO($pdo);
+        $this->connection = new Vortex_Database_PDO($pdo);
         if (!Vortex_Config::getInstance()->isProduction())
             $this->connection->debug = function($BaseQuery) {
-                Vortex_Logger::debug("Query: " . $BaseQuery->getQuery(false) . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\nRowCount: " . $BaseQuery->getResult()->rowCount() . "\n");
+                Vortex_Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
         Vortex_Logger::debug("Connected to database!");
     }
