@@ -15,6 +15,7 @@ class Vortex_View {
     private $layouts;
     private $currentLayout;
     private $path;
+    private $config;
     public $data;
 
     /**
@@ -23,15 +24,16 @@ class Vortex_View {
      */
     public function __construct($name) {
         $this->data = new Vortex_Registry();
+        $this->config = Vortex_Config::getInstance();
         $path = APPLICATION_PATH . '/views/' . ucfirst(strtolower($name)) . 'View';
-        $path .= '.' . Vortex_Config::getInstance()->getViewExtension();
+        $path .= '.' . $this->config->view->extension('tpl');
         if (!file_exists($path))
             throw new Vortex_Exception_ViewError("View don't exists!");
         $this->path = $path;
 
-        $this->isLayout = Vortex_Config::getInstance()->isLayouts();
-        $this->layouts = Vortex_Config::getInstance()->getLayouts();
-        $this->currentLayout = Vortex_Config::getInstance()->getDefaultLayout();
+        $this->isLayout = $this->config->view->layout->enabled(false);
+        $this->layouts = $this->config->view->layout->templates;
+        $this->currentLayout = $this->config->view->layout->default;
     }
 
     /**
@@ -53,7 +55,7 @@ class Vortex_View {
         $path = APPLICATION_PATH . '/views/' . $view;
         if (strpos($view, 'layouts') !== 0)
             $path .= 'View';
-        $path .= '.' . Vortex_Config::getInstance()->getViewExtension();
+        $path .= '.' . $this->config->view->extension('tpl');
 
         if (!is_file($path))
             throw new Vortex_Exception_ViewError('Partial <' . $view . '> doesn\'t exist!');
@@ -86,7 +88,7 @@ class Vortex_View {
     private function layout() {
         if ($this->isLayout) {
             $path = APPLICATION_PATH . '/views/layouts/' . $this->currentLayout;
-            $path .= '.' . Vortex_Config::getInstance()->getViewExtension();
+            $path .= '.' . $this->config->view->extension('tpl');
             include $path;
         }
     }

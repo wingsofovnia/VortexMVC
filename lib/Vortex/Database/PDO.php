@@ -48,7 +48,7 @@ class Vortex_Database_PDO extends FluentPDO {
             $toSerialize[$propName] = $objProp->getValue($object);
         }
         $checksum = md5(serialize($toSerialize) . $className);
-        $data = $this->from($this->config->getMetaObjectTable())
+        $data = $this->from($this->config->metamodel->tables->objects)
                      ->where('checksum', $checksum)
                      ->fetch();
         if ($data)
@@ -65,7 +65,7 @@ class Vortex_Database_PDO extends FluentPDO {
         }
 
         /* Writing object */
-        $query = $this->insertInto($this->config->getMetaObjectTable(), array(
+        $query = $this->insertInto($this->config->metamodel->tables->objects, array(
             'object_type_id'    =>  $objectTypeID,
             'checksum'          =>  $checksum
         ));
@@ -81,7 +81,7 @@ class Vortex_Database_PDO extends FluentPDO {
             );
             if ($valueField != null)
                 $toInsert[$valueField] = $attrVal;
-            $this->insertInto($this->config->getMetaParamsTable(), $toInsert)->execute();
+            $this->insertInto($this->config->metamodel->tables->params, $toInsert)->execute();
         }
 
         /* Commiting...whew */
@@ -96,9 +96,9 @@ class Vortex_Database_PDO extends FluentPDO {
      * @throws Vortex_Exception_DatabaseError if no such object
      */
     public function select($objectId) {
-        $attr_t = $this->config->getMetaAttributesTable();
-        $param_t = $this->config->getMetaParamsTable();
-        $types_t = $this->config->getMetaObjectTypesTable();
+        $attr_t = $this->config->metamodel->tables->attributes;
+        $param_t = $this->config->metamodel->tables->params;
+        $types_t = $this->config->metamodel->tables->object_types;
 
         $objectData = $this->from($param_t)
                            ->where($param_t . '.object_id', $objectId)
@@ -146,10 +146,10 @@ class Vortex_Database_PDO extends FluentPDO {
      * @return array|bool|int false, if no object; int id (if one object) or array of id's
      */
     public function find($objectType, $params) {
-        $attr_t = $this->config->getMetaAttributesTable();
-        $types_t = $this->config->getMetaObjectTypesTable();
-        $obj_t = $this->config->getMetaObjectTable();
-        $param_t = $this->config->getMetaParamsTable();
+        $attr_t = $this->config->metamodel->tables->attributes;
+        $types_t = $this->config->metamodel->tables->object_types;
+        $obj_t = $this->config->metamodel->tables->objects;
+        $param_t = $this->config->metamodel->tables->params;
 
         $query = $this->from($param_t)
                       ->leftJoin($attr_t . ' ON ' . $param_t . '.attr_id = ' . $attr_t . '.attr_id')
@@ -192,8 +192,8 @@ class Vortex_Database_PDO extends FluentPDO {
      */
     public function update($what, $set = array(), $primaryKey = null) {
         if (is_numeric($what)) {
-            $attr_t = $this->config->getMetaAttributesTable();
-            $params_t = $this->config->getMetaParamsTable();
+            $attr_t = $this->config->metamodel->tables->attributes;
+            $params_t = $this->config->metamodel->tables->params;
             $query = parent::update($params_t)
                            ->leftJoin($attr_t . ' ON ' . $params_t . '.attr_id = ' . $attr_t . '.attr_id')
                            ->set($set)
@@ -213,7 +213,7 @@ class Vortex_Database_PDO extends FluentPDO {
      */
     public function delete($what, $primaryKey = null) {
         if (is_numeric($what)) {
-            $query = $this->deleteFrom($this->config->getMetaObjectTable())
+            $query = $this->deleteFrom($this->config->metamodel->tables->objects)
                           ->where('object_id', $what)
                           ->execute();
             return !empty($query);
@@ -231,13 +231,13 @@ class Vortex_Database_PDO extends FluentPDO {
     public function registerObject($name, $attributes) {
         if ($this->getObjectTypeId($name) != null)
             return false;
-        $objectID = $this->insertInto($this->config->getMetaObjectTypesTable(), array(
+        $objectID = $this->insertInto($this->config->metamodel->tables->object_types, array(
             'name'   =>  $name
         ))->execute();
 
         $attr_ids = array();
         foreach ($attributes as $attrName) {
-            $attr_id = $this->insertInto($this->config->getMetaAttributesTable(), array(
+            $attr_id = $this->insertInto($this->config->metamodel->tables->attributes, array(
                 'name'              =>  $attrName,
                 'object_type_id'    =>  $objectID
             ));
@@ -252,7 +252,7 @@ class Vortex_Database_PDO extends FluentPDO {
     protected function getObjectTypeId($name) {
         $objectTypes = $this->cache->load(self::META_OBJECT_TYPES_CACHE_TAG);
         if (!$objectTypes) {
-            $query = $this->from($this->config->getMetaObjectTypesTable())
+            $query = $this->from($this->config->metamodel->tables->object_types)
                           ->fetchAll();
             $objectTypes = array();
             foreach ($query as $type)
@@ -265,7 +265,7 @@ class Vortex_Database_PDO extends FluentPDO {
     protected function getAttributeIds($objectTypeId) {
         $attributes = $this->cache->load(self::META_ATTRIBUTES_CACHE_TAG);
         if (!$attributes) {
-            $query = $this->from($this->config->getMetaAttributesTable())
+            $query = $this->from($this->config->metamodel->tables->attributes)
                           ->fetchAll();
             $attributes = array();
             foreach ($query as $attr)

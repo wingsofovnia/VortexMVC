@@ -12,6 +12,7 @@
 abstract class Vortex_Controller {
     protected $request;
     protected $response;
+    protected $config;
 
     /**
      * Init constructor
@@ -21,6 +22,7 @@ abstract class Vortex_Controller {
     public final function __construct($request, $response) {
         $this->request = $request;
         $this->response = $response;
+        $this->config = Vortex_Config::getInstance();
         $this->init();
     }
 

@@ -36,13 +36,12 @@ class Vortex_Application {
         ob_start();
         $this->initConfigs();
         $this->initRouter();
-
         $this->request->addParams($this->router->getParams());
         try {
             $this->initAction($this->router->getController(), $this->router->getAction());
         } catch (Vortex_Exception_InitError $e) {
             try {
-                $this->initAction($this->config->getErrorController(), $this->config->getErrorAction());
+                $this->initAction($this->config->controller->error, $this->config->action->error);
             } catch (Vortex_Exception_InitError $e) {
                 throw $e;
             }
@@ -57,9 +56,10 @@ class Vortex_Application {
      */
     private function initRouter() {
         $this->router->setUrl($_SERVER['REQUEST_URI']);
-        $routes = $this->config->getRoutes();
-        for ($i = 0; $i < count($routes); $i++)
-            $this->router->registerRoute($routes[$i]);
+        $routes = $this->config->routes;
+        foreach ($routes as $route) {
+            $this->router->registerRoute((array)$route);
+        }
         $this->router->parse();
     }
 
@@ -67,7 +67,6 @@ class Vortex_Application {
      * Includes application.php configs
      */
     private function initConfigs() {
-        include_once APPLICATION_PATH . '/application.php';
         $this->config = Vortex_Config::getInstance();
     }
 

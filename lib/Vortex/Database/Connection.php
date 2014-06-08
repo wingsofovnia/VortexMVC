@@ -43,7 +43,7 @@ class Vortex_Database_Connection {
     private function connect() {
         $pdo = new PDO($this->driver . ':host=' . $this->host . ';dbname=' . $this->db, $this->user, $this->password);
         $this->connection = new Vortex_Database_PDO($pdo);
-        if (!Vortex_Config::getInstance()->isProduction())
+        if (!Vortex_Config::isProduction())
             $this->connection->debug = function($BaseQuery) {
                 Vortex_Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };

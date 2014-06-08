@@ -21,8 +21,8 @@ class Vortex_Router {
      * Inits defaults
      */
     public function __construct() {
-        $this->controller = Vortex_Config::getInstance()->getDefaultController();
-        $this->action = Vortex_Config::getInstance()->getDefaultAction();
+        $this->controller = Vortex_Config::getInstance()->controller->default;
+        $this->action = Vortex_Config::getInstance()->action->default;
         $this->params = array();
         $this->url = '';
         $this->routes = array();
