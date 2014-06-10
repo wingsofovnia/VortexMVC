@@ -13,8 +13,9 @@ class Vortex_Session {
     const GLOBAL_SCOPE = 0;
 
     private static $isStarted = false;
-    public $isGlobalNamespace;
-    public $namespace;
+    private $namespace;
+
+    private $autoDelete = false;
 
     /**
      * Starts a session
@@ -70,7 +71,37 @@ class Vortex_Session {
         if (empty($namespace) && $namespace != Vortex_Session::GLOBAL_SCOPE)
             throw new Vortex_Exception_IllegalArgument('Namespace should be not empty string or Vortex_Session::GLOBAL_SCOPE!');
         $this->namespace = $namespace;
-        $this->isGlobalNamespace = $namespace === Vortex_Session::GLOBAL_SCOPE ? true : false;
+        $_SESSION[$namespace] = array();
+    }
+
+    /**
+     * Gets a name of session's namepsace
+     * @return string namespace
+     */
+    public function getNameSpace() {
+        return $this->namespace;
+    }
+
+    /**
+     * Checks if session namespace is global
+     * @return bool true if global
+     */
+    public function isGlobalNamespace() {
+        return $this->namespace == Vortex_Session::GLOBAL_SCOPE;
+    }
+
+    /**
+     * Enables auto deleting session values after reading
+     */
+    public function enableAutoDelete() {
+        $this->autoDelete = true;
+    }
+
+    /**
+     * Disables auto deleting session values after reading
+     */
+    public function disableAutoDelete() {
+        $this->autoDelete = false;
     }
 
     /**
@@ -81,7 +112,7 @@ class Vortex_Session {
     public function __set($key, $value) {
         if (!self::isStarted())
             self::start();
-        if ($this->isGlobalNamespace) {
+        if ($this->isGlobalNamespace()) {
             $_SESSION[$key] = $value;
         } else {
             $namespace = '__' . $this->namespace;
@@ -96,11 +127,19 @@ class Vortex_Session {
      * @return mixed a value
      */
     public function __get($key, $default = null) {
-        if ($this->isGlobalNamespace) {
-            return isset($_SESSION[$key]) ? $_SESSION[$key] : $default;
+        if ($this->isGlobalNamespace()) {
+            $session = &$_SESSION['__' . $this->namespace];
         } else {
-            $namespace = '__' . $this->namespace;
-            return isset($_SESSION[$namespace][$key]) ? $_SESSION[$namespace][$key] : $default;
+            $session = &$_SESSION;
         }
+
+        if (isset($session[$key])) {
+            $return = $session[$key];
+            if ($this->autoDelete)
+                unset($session[$key]);
+            return $return;
+        }
+
+        return $default;
     }
 } 
