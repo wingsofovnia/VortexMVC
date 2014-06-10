@@ -1,31 +1,28 @@
 <?php 
 class Vortex_FrontController {
-	
-	private $router;
 	private $config;
 	private $request;
 	private $response;
+
+    private $asyncSpecialized = true;
 	
 	public function __construct() {
-		$this->router   = new Vortex_Router();
         $this->request  = new Vortex_Request();
         $this->response = new Vortex_Response();
+        $this->config = Vortex_Config::getInstance();
 	}
-	
+
 	/**
      * Run the application
      * @throws Vortex_Exception_ControllerError if controller doesn't exists (and PRODUCTION state = 0)
      */
     public function run() {
         ob_start();
-        $this->initConfigs();
-        $this->initRouter();
-        $this->request->addParams($this->router->getParams());
         try {
-            $this->initAction($this->router->getController(), $this->router->getAction());
+            $this->runAction($this->request->getController(), $this->request->getAction());
         } catch (Vortex_Exception_InitError $e) {
             try {
-                $this->initAction($this->config->controller->error, $this->config->action->error);
+                $this->runAction($this->config->controller->error, $this->config->action->error);
             } catch (Vortex_Exception_InitError $e) {
                 throw $e;
             }
@@ -34,42 +31,45 @@ class Vortex_FrontController {
         $this->response->setBody($content);
         $this->response->sendPacket();
     }
-	
-	/**
-     * Includes application.php configs
+
+    /**
+     * Enables friendly action for XmlHttpRequests
      */
-    private function initConfigs() {
-        $this->config = Vortex_Config::getInstance();
+    public function enableAsyncAction() {
+        $this->asyncSpecialized = true;
     }
-	
-	/**
-     * Inits router configs and parsing URL
+
+    /**
+     * Disables friendly action for XmlHttpRequests
      */
-    private function initRouter() {
-        $this->router->setUrl($_SERVER['REQUEST_URI']);
-        $routes = $this->config->routes;
-        foreach ($routes as $route) {
-            $this->router->registerRoute((array)$route);
-        }
-        $this->router->parse();
+    public function disableAsyncAction() {
+        $this->asyncSpecialized = false;
     }
-	
+
 	/**
      * Runs an action of controller
      * @param string $controller name of controller
      * @param string $action name of action
      * @throws Vortex_Exception_InitError if controller or action doesn't exists
      */
-    private function initAction($controller, $action) {
+    private function runAction($controller, $action) {
         $controller .= 'Controller';
+        $asyncAction = $action . 'AsyncAction';
+        $action .= 'Action';
+
         $controllerPath = APPLICATION_PATH . '/controllers/' . $controller . '.php';
         if (!file_exists($controllerPath))
             throw new Vortex_Exception_InitError('Controller does\'t exists!');
         require_once $controllerPath;
+
         $controller = new $controller($this->request, $this->response);
-        $action .= 'Action';
+
+        /* Checking if AsyncAction should be used */
+        if ($this->asyncSpecialized && $this->request->isXMLHttpRequest())
+            $action = $asyncAction;
+
         if (is_callable(array($controller, $action)) == false)
-            throw new Vortex_Exception_InitError('Action does\'t exists!');
+            throw new Vortex_Exception_InitError('Action <' . $action . '> does\'t exists!');
         $controller->$action();
     }
 }

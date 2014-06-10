@@ -17,6 +17,10 @@ class Vortex_Request {
     private $cookies;
     private $params;
     private $method;
+    private $url;
+
+    private $controller;
+    private $action;
 
     /**
      * Init constructor
@@ -36,6 +40,13 @@ class Vortex_Request {
 
         $this->params = new Vortex_Registry();
         $this->method = $_SERVER['REQUEST_METHOD'];
+
+        $this->controller = Vortex_Config::getInstance()->controller->default;
+        $this->action = Vortex_Config::getInstance()->action->default;
+        $this->url = $_SERVER['REQUEST_URI'];
+
+        $this->cleanURL();
+        $this->parseURL();
     }
 
     /**
@@ -156,5 +167,72 @@ class Vortex_Request {
         }
         return null;
     }
+
+    /**
+     * Gets cleaned REQUEST_URI
+     * @return string a request url
+     */
+    public function getRequestUrl() {
+        return $this->url;
+    }
+
+    /**
+     * Parses the URL
+     */
+    private function parseURL() {
+        $args = explode('/', $this->url);
+        if (count($args) == 0)
+            return;
+        $args = array_filter($args);
+        $args = array_map('trim', $args);
+        $args = array_map('strtolower', $args);
+        $args = array_values($args);
+        $num = count($args);
+        if ($num > 0) {
+            $this->controller = ucfirst($args[0]);
+            if ($num > 1) {
+                $this->action = $args[1];
+                if ($num > 2) {
+                    for ($i = 2; $i < $num; $i++) {
+                        if (($i + 1) < $num) {
+                            $this->params->$args[$i] = $args[$i + 1];
+                            $i++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Service method to clean URL from HOST name and special chars
+     */
+    private function cleanURL() {
+        $url = urldecode($this->url);
+        if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
+            $url =  substr($url, strpos($url, $_SERVER['SERVER_NAME']));
+        if (strlen($url) > 1)
+            $url = rtrim($url, '/');
+        $url = preg_replace('/\s+/', '', $url);
+        $this->url = preg_replace('/[^A-Za-z0-9\-]/', '', $url);
+    }
+
+    /**
+     * Gets a name of controller parsed from url
+     * @return string controller's name
+     */
+    public function getController() {
+        return $this->controller;
+    }
+
+    /**
+     * Gets a name of action parsed from url
+     * @return string action's name
+     */
+    public function getAction() {
+        return $this->action;
+    }
+
+
 
 } 
