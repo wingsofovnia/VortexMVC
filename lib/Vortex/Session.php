@@ -113,20 +113,19 @@ class Vortex_Session {
         if (!self::isStarted())
             self::start();
         if ($this->isGlobalNamespace()) {
-            $_SESSION[$key] = $value;
-        } else {
             $namespace = '__' . $this->namespace;
             $_SESSION[$namespace][$key] = $value;
+        } else {
+            $_SESSION[$key] = $value;
         }
     }
 
     /**
      * Picks the data from Session
      * @param string $key a key
-     * @param mixed $default a value, that will be returned, if there is no record in Session
      * @return mixed a value
      */
-    public function __get($key, $default = null) {
+    public function __get($key) {
         if ($this->isGlobalNamespace()) {
             $session = &$_SESSION['__' . $this->namespace];
         } else {
@@ -140,6 +139,6 @@ class Vortex_Session {
             return $return;
         }
 
-        return $default;
+        return null;
     }
 } 
