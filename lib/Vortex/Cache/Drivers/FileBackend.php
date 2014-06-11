@@ -79,9 +79,9 @@ class FileBackend implements CacheBackend {
 
     public function delete($id) {
         $file = $this->getPath($id);
-        $wasDeleted = !@unlink($file);
+        $wasDeleted = @unlink($file);
         if (!$wasDeleted)
-            Logger::error('Failed to delete cache file <' . $file . '>!');
+            Logger::error('Failed to delete cache file ' . $file . '!');
         return $wasDeleted;
     }
 
@@ -90,10 +90,10 @@ class FileBackend implements CacheBackend {
         $cleaned = true;
         foreach ($files as $file) {
             if (is_file($file)) {
-                $wasDeleted = !@unlink($file);
+                $wasDeleted = @unlink($file);
                 if (!$wasDeleted) {
                     $cleaned = false;
-                    Logger::error('Failed to delete cache file <' . $file . '>!');
+                    Logger::error('Failed to delete cache file ' . $file . '!');
                 }
             }
         }

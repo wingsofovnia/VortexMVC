@@ -10,7 +10,6 @@
 namespace Vortex;
 use ArrayObject;
 use IniParser;
-use Vortex\Cache\Cache;
 use Vortex\Cache\CacheFactory;
 
 require LIB_PATH . '/Utils/IniParser.php';

@@ -10,7 +10,7 @@ namespace Vortex\Cache\Drivers;
 
 interface CacheBackend {
     const DEFAULT_LIFE_TIME = 300;
-    const DEFAULT_NAMEPSACE = 'vc';
+    const DEFAULT_NAMEPSACE = 'vf';
 
     function check();
     function config($options);

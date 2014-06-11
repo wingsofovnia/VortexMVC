@@ -4,15 +4,14 @@ Tiny PHP MVC Framework made for myself
 
 ## How to use?
 
-### Router
+### Front Controller
 
-Router is very simple. No RegExp routes, only full math of URL.
-Check application/application.php for configs.
-
-The autoload URL is:
+Front Controller uses Zend-style of URL to determine controller and action:
 ```
 http://yourweb.com/%controller%/%action%/%param_name1%/%param_val1%/...
 ```
+and than call `%action%` action of `%controller%` Controller.
+`%action%` and `%controller%` params, as well as other params, parsed from url, available from Vortex\Request object.
 
 #### Controller
 
@@ -21,12 +20,15 @@ Controller supports actions. Every controller must have at least one:
 public indexAction();
 ```
 All actions should ends with 'Action' (case!)
+One of the VortexMVC action's features is a 'action - friend', that respects `X_REQUESTED_WITH` header (AJAX).
+If the client sends data with such header on, for example, `http://yourweb.com/index/login/` url, that front controller try to execute not `indexAction`, but `indexAyncAction`, if it exists. Otherwise, regular `indexAction` will be called.
 
 #### View
 
 Very simple. Just create the View obj:
 ```php
-$view = new Vortex_View(%view_file_name%);
+use Vortex\View;
+$view = new View(%view_file_name%);
 ```
 than add data:
 ```php
@@ -38,17 +40,51 @@ $view->render();
 ```
 That's all! See IndexController for example.
 
-#### Model
+Framework also has a simple __Layout system__:
+You should config it in application.ini file. Explore `application/views/layouts/*`, `Vortex\View` for more info =P
 
-If you need a DB connection, extend `Vortex_Model` class and then connect to database:
+#### DB connection
+
+If you need a DB connection, just take it from Vortex\Connection!
 ```php
-$this->connect();
+use Vortex\Connection;
+$db = Connection::getConnection();
 ```
-Than you can use:
+Than you can use it. Here it is an example:
 ```php
-$this->db
+$data = $db->from('article')->select('user.name');
 ```
-for making queries. `$this->db` is an instanse of FluentPDO - a wrapper of PDO, so you can use regular PDO things with new ones (https://github.com/lichtner/fluentpdo)
+`$db` is an instance of FluentPDO - a wrapper of PDO, so you can use regular PDO things with new ones (https://github.com/lichtner/fluentpdo)
 
+#### Caching
 
+VortexMVC has some tools for caching. It's in development stage now, but it can do some things right now.
+Firstly, choose `Driver` that your need. For example, if your need caching in file, that `FileBackend` is your choice!
 
+OK, lets use factory to setup cache object:
+```php
+use Vortex\Cache\CacheFactory;
+$cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array('namespace' => 'vConfig'));
+```
+factory method takes 2 params: `Driver` name, and `Options` array, that contains settings for that driver.
+All `Drivers` are defined in CacheFactory as a `const`s, and `Options` array is specific for particular driver. But all driver options has __at least 2 params__:
+ * Namespace (default: 'vf')
+ * Cache life time (default: 300)
+If they are not specified, than default values is used.
+
+That, you can save data with it's id:
+```php
+$cache->save('mydata#05', $data);
+```
+And that retrieve it by id in the same state it was:
+```php
+$mydata = $cache->load('mydata#05');
+```
+
+Check PHPDoc's of `Vortex\Cache\Cache` for more information.
+
+#### Credits
+VortexMVC uses such work of other developers:
+* __FluentPDO__ :: https://github.com/lichtner/fluentpdo
+* __IniParser__ :: https://github.com/austinhyde/IniParser
+* __SplClassLoader__ :: https://gist.github.com/jwage/221634
