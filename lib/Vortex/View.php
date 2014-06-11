@@ -6,11 +6,14 @@
  * Time: 18:08
  */
 
+namespace Vortex;
+use Vortex\Exceptions\ViewException;
+
 /**
  * Class Vortex_View
  * This class is responsible for web application view
  */
-class Vortex_View {
+class View {
     private $isLayout;
     private $layouts;
     private $currentLayout;
@@ -21,14 +24,15 @@ class Vortex_View {
     /**
      * Init constuctor
      * @param string $name a name of a view template
+     * @throws ViewException
      */
     public function __construct($name) {
-        $this->data = new Vortex_Registry();
-        $this->config = Vortex_Config::getInstance();
+        $this->data = new Registry();
+        $this->config = Config::getInstance();
         $path = APPLICATION_PATH . '/views/' . ucfirst(strtolower($name)) . 'View';
         $path .= '.' . $this->config->view->extension('tpl');
         if (!file_exists($path))
-            throw new Vortex_Exception_ViewError("View don't exists!");
+            throw new ViewException("View don't exists!");
         $this->path = $path;
 
         $this->isLayout = $this->config->view->layout->enabled(false);
@@ -49,7 +53,7 @@ class Vortex_View {
      * Includes another view template
      * @param string $view name of view template
      * @param array $data addition data for view template
-     * @throws Vortex_Exception_ViewError if partial doesn't exist
+     * @throws ViewException if partial doesn't exist
      */
     public function partial($view, $data = array()) {
         $path = APPLICATION_PATH . '/views/' . $view;
@@ -58,7 +62,7 @@ class Vortex_View {
         $path .= '.' . $this->config->view->extension('tpl');
 
         if (!is_file($path))
-            throw new Vortex_Exception_ViewError('Partial <' . $view . '> doesn\'t exist!');
+            throw new ViewException('Partial <' . $view . '> doesn\'t exist!');
         foreach ($data as $key => $value) {
             $this->data->$key = $value;
         }
@@ -92,4 +96,4 @@ class Vortex_View {
             include $path;
         }
     }
-} 
+}

@@ -3,13 +3,23 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
+ *
+ * @package Vortex
  */
+
+namespace Vortex;
+use ArrayObject;
+use IniParser;
+use Vortex\Cache\Cache;
+use Vortex\Cache\CacheFactory;
+
+require LIB_PATH . '/Utils/IniParser.php';
 
 /**
  * Class Vortex_Config
  * This class parses application ini settings file into OM
  */
-class Vortex_Config extends Utils_IniParser {
+class Config extends IniParser {
     const CACHE_NAMESPACE_TAG = 'config';
     const APPLICATION_SETTINGS_FILE = '/application.ini';
     private static $_instance;
@@ -23,7 +33,7 @@ class Vortex_Config extends Utils_IniParser {
      */
     public static function getInstance() {
         if (is_null(self::$_instance)) {
-            self::$_instance = new self(APPLICATION_PATH . Vortex_Config::APPLICATION_SETTINGS_FILE);
+            self::$_instance = new self(APPLICATION_PATH . Config::APPLICATION_SETTINGS_FILE);
         }
         return self::$_instance->config;
     }
@@ -31,16 +41,13 @@ class Vortex_Config extends Utils_IniParser {
     /**
      * Parses settings file and caching it
      * @param string $file path to file
-     * @throws RuntimeException if config file 'environment' doesn't exist or points on non-existent section
+     * @throws \RuntimeException if config file 'environment' doesn't exist or points on non-existent section
      */
     public function __construct($file = null) {
         parent::__construct($file);
 
         /* Caching configs... */
-        $cache = new Vortex_Service_Cache(new Vortex_Service_Drivers_FileStorage());
-        $cache->setLifeTime(Vortex_Service_Cache::UNLIMITED_LIFETIME);
-        $cache->setNamespace(self::CACHE_NAMESPACE_TAG);
-
+        $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array('namespace' => 'vConfig'));
         $configCacheId = md5($file);
         $this->config = $cache->load($configCacheId);
         if (!$this->config) {
@@ -51,7 +58,7 @@ class Vortex_Config extends Utils_IniParser {
         /* Determining environment */
         $stage = $this->config->environment('production');
         if (!isset($this->config->$stage))
-            throw new RuntimeException('Settings file doesn\'t have <' . $stage . '> stage!');
+            throw new \RuntimeException('Settings file doesn\'t have <' . $stage . '> stage!');
         self::$production = $stage == 'production';
         $this->config = $this->config->$stage;
     }
@@ -59,7 +66,7 @@ class Vortex_Config extends Utils_IniParser {
     /**
      * Overloading for using our ArrayObject with magic caller
      * @param array $array
-     * @return array|ArrayObject|ArrayObjectMagic
+     * @return array|\ArrayObject|ArrayObjectMagic
      */
     protected function getArrayValue($array = array()) {
         if ($this->use_array_object) {
@@ -91,6 +98,9 @@ class ArrayObjectMagic extends ArrayObject {
     public function __call($method, $args) {
         if (isset($this->$method))
             return $this->$method;
-        return isset($args[0]) ? $args[0] : null;
+        return isset($args[0]) ? $args[0] : new ArrayObjectMagic();
+    }
+    public function __get($name) {
+        return new ArrayObjectMagic();
     }
 }

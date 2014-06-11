@@ -28,12 +28,12 @@ class UpdateQuery extends CommonQuery {
 		$this->joins[] = end($tableParts);
 	}
 
-	/**
-	 * @param string|array $fieldOrArray
-	 * @param null $value
-	 * @return $this
-	 * @throws Exception
-	 */
+    /**
+     * @param string|array $fieldOrArray
+     * @param bool|null $value
+     * @throws Exception
+     * @return $this
+     */
 	public function set($fieldOrArray, $value = false) {
 		if (!$fieldOrArray) {
 			return $this;

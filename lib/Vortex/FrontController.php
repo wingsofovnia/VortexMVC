@@ -1,5 +1,16 @@
-<?php 
-class Vortex_FrontController {
+<?php
+/**
+ * Project: VortexMVC
+ * Author: Rostislav Khanyukov
+ * Date: 19-May-14
+ *
+ * @package Vortex
+ */
+
+namespace Vortex;
+use Vortex\Exceptions\FrontException;
+
+class FrontController {
 	private $config;
 	private $request;
 	private $response;
@@ -7,23 +18,23 @@ class Vortex_FrontController {
     private $asyncSpecialized = true;
 	
 	public function __construct() {
-        $this->request  = new Vortex_Request();
-        $this->response = new Vortex_Response();
-        $this->config = Vortex_Config::getInstance();
+        $this->request  = new Request();
+        $this->response = new Response();
+        $this->config = Config::getInstance();
 	}
 
 	/**
      * Run the application
-     * @throws Vortex_Exception_ControllerError if controller doesn't exists (and PRODUCTION state = 0)
+     * @throws FrontException if controller doesn't exists (and PRODUCTION state = 0)
      */
     public function run() {
         ob_start();
         try {
             $this->runAction($this->request->getController(), $this->request->getAction());
-        } catch (Vortex_Exception_InitError $e) {
+        } catch (FrontException $e) {
             try {
                 $this->runAction($this->config->controller->error, $this->config->action->error);
-            } catch (Vortex_Exception_InitError $e) {
+            } catch (FrontException $e) {
                 throw $e;
             }
         }
@@ -50,7 +61,7 @@ class Vortex_FrontController {
      * Runs an action of controller
      * @param string $controller name of controller
      * @param string $action name of action
-     * @throws Vortex_Exception_InitError if controller or action doesn't exists
+     * @throws FrontException if controller or action doesn't exists
      */
     private function runAction($controller, $action) {
         $controller .= 'Controller';
@@ -59,7 +70,7 @@ class Vortex_FrontController {
 
         $controllerPath = APPLICATION_PATH . '/controllers/' . $controller . '.php';
         if (!file_exists($controllerPath))
-            throw new Vortex_Exception_InitError('Controller does\'t exists!');
+            throw new FrontException('Controller does\'t exists!');
         require_once $controllerPath;
 
         $controller = new $controller($this->request, $this->response);
@@ -69,7 +80,7 @@ class Vortex_FrontController {
             $action = $asyncAction;
 
         if (is_callable(array($controller, $action)) == false)
-            throw new Vortex_Exception_InitError('Action <' . $action . '> does\'t exists!');
+            throw new FrontException('Action <' . $action . '> does\'t exists!');
         $controller->$action();
     }
 }

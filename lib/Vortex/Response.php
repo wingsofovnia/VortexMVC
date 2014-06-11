@@ -6,12 +6,15 @@
  * Time: 20:22
  */
 
+namespace Vortex;
+use Vortex\Exceptions\ResponseException;
+
 /**
  * Class Vortex_Response
  * This class implements a wrapper of HTTP Response PACKET with addition
  * extended functionality
  */
-class Vortex_Response {
+class Response {
     /* Status codes */
     const STATUS_CONTINUE_100 = 100;
     const STATUS_SWITCHING_PROTOCOLS = 101;
@@ -172,11 +175,11 @@ class Vortex_Response {
     /**
      * Sets a response status code
      * @param int $statusCode a status code
-     * @throws Vortex_Exception_ResponseError if status code is wrong (100 ~ 599 supports only)
+     * @throws ResponseException if status code is wrong (100 ~ 599 supports only)
      */
     public function setStatusCode($statusCode) {
         if ($statusCode >= 600 || $statusCode < 100)
-            throw new Vortex_Exception_ResponseError('Unknown status code (100 ~ 599 only)!');
+            throw new ResponseException('Unknown status code (100 ~ 599 only)!');
         $this->statusCode = $statusCode;
     }
 
@@ -191,11 +194,11 @@ class Vortex_Response {
     /**
      * Sets a version of HTTP from packet's status line
      * @param string $version (1.0 and 1.1 allowed)
-     * @throws Vortex_Exception_ResponseError if version is unsupported
+     * @throws ResponseException if version is unsupported
      */
     public function setHttpVersion($version) {
         if ($version != '1.0' || $version != '1.1')
-            throw new Vortex_Exception_ResponseError('Supported only 1.0 and 1.1 versions!');
+            throw new ResponseException('Supported only 1.0 and 1.1 versions!');
         $this->version = 'HTTP/' . $version;
     }
 
@@ -214,6 +217,9 @@ class Vortex_Response {
          * ------------------------ *
          *       MESSAGE BODY       *   // The data
          ***************************/
+        if (headers_sent())
+            throw new ResponseException('Can\'t start session coz headers have been already started!');
+
         $statusLine = $this->version . ' ' . $this->statusCode . ' ' . self::$messages[$this->statusCode];
         header($statusLine, true, $this->statusCode);
 
@@ -223,8 +229,8 @@ class Vortex_Response {
         echo $this->body;
     }
 
-    public function redirect($url, $code = Vortex_Response::STATUS_FOUND_302) {
+    public function redirect($url, $code = Response::STATUS_FOUND_302) {
         $this->setHeader('Location', $url);
         $this->setStatusCode($code);
     }
-} 
+}

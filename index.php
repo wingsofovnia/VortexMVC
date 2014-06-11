@@ -11,4 +11,5 @@ define('LIB_PATH', ROOT_PATH . '/lib');
 define('APPLICATION_PATH', ROOT_PATH . '/application');
 require_once LIB_PATH . '/Vortex/Application.php';
 
-$app = new Vortex_Application();
+use \Vortex\Application as Vortex_Application;
+Vortex_Application::run();

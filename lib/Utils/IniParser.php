@@ -14,7 +14,7 @@
  * @author Austin Hyde
  * @author Till Klampaeckel <till@php.net>
  */
-class Utils_IniParser {
+class IniParser {
 
     /**
      * Filename of our .ini file.
@@ -64,8 +64,7 @@ class Utils_IniParser {
 
     /**
      * @param string $file
-     *
-     * @return IniParser
+     * @return \IniParser
      */
     public function __construct($file = null) {
         if ($file !== null) {
@@ -78,6 +77,7 @@ class Utils_IniParser {
      *
      * @param string $file
      * @return array
+     * @throws LogicException
      */
     public function parse($file = null) {
         if ($file !== null) {
@@ -107,7 +107,7 @@ class Utils_IniParser {
 
     /**
      * @param string $file
-     *
+
      * @return IniParser
      * @throws InvalidArgumentException
      */
@@ -123,6 +123,7 @@ class Utils_IniParser {
      * Parse sections and inheritance.
      * @param  array  $simple_parsed
      * @return array  Parsed sections
+     * @throws UnexpectedValueException
      */
     private function parseSections(array $simple_parsed) {
         // do an initial pass to gather section names
@@ -169,6 +170,7 @@ class Utils_IniParser {
      * @param array $arr
      *
      * @return array
+     * @throws LogicException
      */
     private function parseKeys(array $arr) {
         $output = $this->getArrayValue();

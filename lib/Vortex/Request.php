@@ -6,12 +6,14 @@
  * Time: 18:02
  */
 
+namespace Vortex;
+
 /**
  * Class Vortex_Request
  * This class implements a wrapper of HTTP Request with addition
  * extended functionality
  */
-class Vortex_Request {
+class Request {
     private $get;
     private $post;
     private $cookies;
@@ -38,11 +40,11 @@ class Vortex_Request {
         $_COOKIE = array_filter($_COOKIE);
         $this->cookies = $_COOKIE;
 
-        $this->params = new Vortex_Registry();
+        $this->params = new Registry();
         $this->method = $_SERVER['REQUEST_METHOD'];
 
-        $this->controller = Vortex_Config::getInstance()->controller->default;
-        $this->action = Vortex_Config::getInstance()->action->default;
+        $this->controller = Config::getInstance()->controller->default;
+        $this->action = Config::getInstance()->action->default;
         $this->url = $_SERVER['REQUEST_URI'];
 
         $this->cleanURL();
@@ -143,11 +145,11 @@ class Vortex_Request {
      * Gets a value of header from request
      * @param string $header a name of header
      * @return string|null a headers value, if there is no such header - null
-     * @throws Vortex_Exception_IllegalArgument if $header name is empty
+     * @throws \InvalidArgumentException if $header name is empty
      */
     public function getHeader($header) {
         if (empty($header))
-            throw new Vortex_Exception_IllegalArgument('An HTTP header name is required');
+            throw new \InvalidArgumentException('An HTTP header name is required');
         $temp = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
         if (isset($_SERVER[$temp])) {
             return $_SERVER[$temp];
@@ -232,7 +234,4 @@ class Vortex_Request {
     public function getAction() {
         return $this->action;
     }
-
-
-
-} 
+}

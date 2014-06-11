@@ -5,11 +5,13 @@
  * Date: 19-May-14
  */
 
+namespace Vortex;
+
 /**
  * Class Vortex_Registry
  * This class is a simple Registry (key-value storage) implementation
  */
-class Vortex_Registry {
+class Registry {
     private $vars = array();
 
     /**

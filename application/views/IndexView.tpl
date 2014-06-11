@@ -1,5 +1,4 @@
-<div style="margin:5px;
-            padding:50px 15px;
+<div style="padding:50px 15px;
             border:1px solid #D5D5D5;
             border-radius:3px;
             background:#F6F6F6;

@@ -6,11 +6,14 @@
  * Time: 20:34
  */
 
-class IndexController extends Vortex_Controller {
+use Vortex\Controller;
+use Vortex\View;
+
+class IndexController extends Controller {
 
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
-        $view = new Vortex_View('index');
+        $view = new View('index');
         $view->data->firstWords = 'Hello World!';
         $view->render();
     }

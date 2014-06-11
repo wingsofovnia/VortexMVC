@@ -6,7 +6,9 @@
  * Time: 15:41
  */
 
-class Vortex_Auth {
+namespace Vortex;
+
+class Auth {
     public function login($identity, $password) {
 
     }

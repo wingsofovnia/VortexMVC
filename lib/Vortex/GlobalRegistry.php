@@ -5,26 +5,28 @@
  * Date: 19-May-14
  */
 
+namespace Vortex;
+
 /**
- * Class Vortex_Global
- * An implementation of Vortex_Registry as a singleton in a global scope
+ * Class Global
+ * An implementation of Registry as a singleton in a global scope
  */
-class Vortex_Global {
+class GlobalRegistry {
     private $registry;
     private static $_instance = null;
 
     /**
-     * Creates internal Vortex_Registry object
+     * Creates internal Registry object
      */
     protected function __construct() {
-        $this->registry = new Vortex_Registry();
+        $this->registry = new Registry();
     }
 
     protected function __clone() { }
 
     /**
      * Instance getter
-     * @return Vortex_Registry an object of internal registry
+     * @return Registry an object of internal registry
      */
     static private function getInstance() {
         if (is_null(self::$_instance)) {

@@ -5,11 +5,14 @@
  * Date: 28-May-14
  */
 
+namespace Vortex;
+use Vortex\Exceptions\SessionException;
+
 /**
  * Class Vortex_Session
  * A PHP Sessions wrapper with namespaces
  */
-class Vortex_Session {
+class Session {
     const GLOBAL_SCOPE = 0;
 
     private static $isStarted = false;
@@ -19,13 +22,13 @@ class Vortex_Session {
 
     /**
      * Starts a session
-     * @throws Vortex_Exception_SessionError if headers have been already sent
+     * @throws SessionException if headers have been already sent
      */
     public static function start() {
         if (self::isStarted())
             return;
         if (headers_sent())
-            throw new Vortex_Exception_SessionError('Can\'t start session coz headers have been already started!');
+            throw new SessionException('Can\'t start session coz headers have been already started!');
         session_start();
         self::$isStarted = true;
     }
@@ -58,18 +61,18 @@ class Vortex_Session {
      * Constructs a namespaced session
      * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
      */
-    public function __construct($namespace = Vortex_Session::GLOBAL_SCOPE) {
+    public function __construct($namespace = Session::GLOBAL_SCOPE) {
         $this->setNameSpace($namespace);
     }
 
     /**
      * Change current object's namespace
      * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
-     * @throws Vortex_Exception_IllegalArgument if name is empty
+     * @throws \InvalidArgumentException if name is empty
      */
     public function setNameSpace($namespace) {
-        if (empty($namespace) && $namespace != Vortex_Session::GLOBAL_SCOPE)
-            throw new Vortex_Exception_IllegalArgument('Namespace should be not empty string or Vortex_Session::GLOBAL_SCOPE!');
+        if (empty($namespace) && $namespace != Session::GLOBAL_SCOPE)
+            throw new \InvalidArgumentException('Namespace should be not empty string or Vortex_Session::GLOBAL_SCOPE!');
         $this->namespace = $namespace;
         $_SESSION[$namespace] = array();
     }
@@ -87,7 +90,7 @@ class Vortex_Session {
      * @return bool true if global
      */
     public function isGlobalNamespace() {
-        return $this->namespace == Vortex_Session::GLOBAL_SCOPE;
+        return $this->namespace == Session::GLOBAL_SCOPE;
     }
 
     /**

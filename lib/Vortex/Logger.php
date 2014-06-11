@@ -5,11 +5,13 @@
  * Date: 19-May-14
  */
 
+namespace Vortex;
+
 /**
  * Class Vortex_Logger
  * A simple logger implementation
  */
-class Vortex_Logger {
+class Logger {
     const EXCEPTION = -1;
     const ERROR = 0;
     const WARNING = 1;
@@ -26,7 +28,7 @@ class Vortex_Logger {
                                    self::INFO         => '#FFECC6',
                                    self::DEBUG        => '#F6F6F6');
 
-    private static $level;
+    private static $level = self::ERROR;
 
     /**
      * Sets a logging level
@@ -43,6 +45,8 @@ class Vortex_Logger {
      * @param int $level a logger level
      */
     private static function messageBody($body, $level) {
+        if (!ob_get_level())
+            ob_start();
         if (is_array($body))
             $string = print_r($body, true);
         else if (is_string($body))
