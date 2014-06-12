@@ -34,8 +34,12 @@ class Application {
      */
     private static function registerAutoLoader() {
         require LIB_PATH . '/utils/SplClassLoader.php';
+
         $libLoader = new \SplClassLoader('Vortex', LIB_PATH);
         $libLoader->register();
+
+        $appLoader = new \SplClassLoader('Application', ROOT_PATH);
+        $appLoader->register();
     }
 
     /**

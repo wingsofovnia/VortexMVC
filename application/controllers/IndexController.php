@@ -6,6 +6,7 @@
  * Time: 20:34
  */
 
+namespace Application\Controllers;
 use Vortex\Controller;
 use Vortex\View;
 

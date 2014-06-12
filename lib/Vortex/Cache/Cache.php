@@ -9,6 +9,8 @@
 namespace Vortex\Cache;
 
 interface Cache {
+    const UNLIMITED_LIFE_TIME = -1;
+
     function save($id, $data = null, $time = null);
     function load($id);
     function delete($id);

@@ -68,11 +68,7 @@ class FrontController {
         $asyncAction = $action . 'AsyncAction';
         $action .= 'Action';
 
-        $controllerPath = APPLICATION_PATH . '/controllers/' . $controller . '.php';
-        if (!file_exists($controllerPath))
-            throw new FrontException('Controller does\'t exists!');
-        require_once $controllerPath;
-
+        $controller = 'Application\Controllers\\' . $controller;
         $controller = new $controller($this->request, $this->response);
 
         /* Checking if AsyncAction should be used */

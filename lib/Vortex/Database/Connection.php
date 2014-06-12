@@ -5,7 +5,9 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Database;
+use Vortex\Config;
+use Vortex\Logger;
 
 /**
  * Class Vortex_Connection
@@ -22,6 +24,7 @@ class Connection {
     private $password;
     private $db;
     private $connection;
+    private $dao;
 
     /**
      * Init constructor. Reads values from Vortex_Config
@@ -52,6 +55,8 @@ class Connection {
             $this->connection->debug = function($BaseQuery) {
                 Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
+
+        $this->dao = new DAO($this->connection);
         Logger::debug("Connected to database!");
     }
 
@@ -66,5 +71,16 @@ class Connection {
             self::$_instance = new self();
         }
         return self::$_instance->connection;
+    }
+
+    /**
+     * Gets a DAO object
+     * @return DAO instance
+     */
+    public static function getDAO() {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new self();
+        }
+        return self::$_instance->dao;
     }
 }
