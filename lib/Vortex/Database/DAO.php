@@ -7,7 +7,8 @@
  */
 
 namespace Vortex\Database;
-use Vortex\Exceptions\DatabaseException;
+
+use Vortex\Exceptions\DAOException;
 use Vortex\Logger;
 
 class DAO {
@@ -22,7 +23,7 @@ class DAO {
         $this->fluentPDO = $pdo;
     }
 
-    public function insert($object) {
+    public function insert(DAOEntity $object) {
         /* Parsing received object */
         $objectData = $this->readObject($object);
 
@@ -78,7 +79,7 @@ class DAO {
                                        ->select(DAO::META_OBJECT_TYPES_TABLE . '.*')
                                        ->fetchAll();
         if (!$objectData)
-            throw new DatabaseException('No such object id!');
+            throw new DAOException('No such object id!');
 
         /* Creating and restoring object */
         $obj = new $objectData[0]['name']();
@@ -130,12 +131,31 @@ class DAO {
     }
 
     public function update($object_id, $set = array()) {
-        $query = $this->fluentPDO->update(DAO::META_PARAMS_TABLE)
-                                 ->leftJoin(DAO::META_ATTRIBUTES_TABLE . ' ON ' . DAO::META_PARAMS_TABLE . '.attr_id = ' . DAO::META_ATTRIBUTES_TABLE . '.attr_id')
-                                 ->set($set)
-                                 ->where(DAO::META_PARAMS_TABLE . '.object_id', $object_id)
-                                 ->execute();
-        return !empty($query);
+        $this->fluentPDO->getPdo()->beginTransaction();
+        $attributes = $this->getObjectAttributes($object_id);
+        foreach ($set as $param_name => $param_value) {
+            $field = $this->getTextField($param_value);
+
+            $delete = $this->fluentPDO->deleteFrom(DAO::META_PARAMS_TABLE)
+                                      ->where('object_id', $object_id)
+                                      ->where('attr_id', $attributes[$param_name])
+                                      ->execute();
+            if (!$delete) {
+                $this->fluentPDO->getPdo()->rollBack();
+                throw new DAOException('Deleting param #' . $param_name . '# failed!');
+            }
+
+            $toInsert = array(
+                'object_id'     =>  $object_id,
+                'attr_id'       =>  $attributes[$param_name],
+                $field          =>  $param_value
+            );
+            $this->fluentPDO->insertInto(DAO::META_PARAMS_TABLE, $toInsert)
+                            ->execute();
+        }
+
+        $this->fluentPDO->getPdo()->commit();
+        return true;
     }
 
     public function delete($object_id) {
@@ -145,9 +165,13 @@ class DAO {
         return !empty($query);
     }
 
-    private function readObject($object) {
+    public function readObject($object) {
         if (!is_object($object))
             throw new \InvalidArgumentException('DAO is used only for saving objects!');
+
+        if (!is_a($object, 'Vortex\Database\DAOEntity'))
+            throw new DAOException('Object should extends DAOEntity abstract class!');
+
         $checksum = md5(json_encode($object));
 
         $name = get_class ($object);
@@ -157,6 +181,8 @@ class DAO {
         $attributes = array();
         foreach ($raw as $attr => $val) {
             $attr_name = trim(preg_replace('('.$nameEsc.'|\*|)', '', $attr));
+            if ($attr_name[0] === '_')
+                continue;
             $attributes[$attr_name] = $val;
         }
 
@@ -218,7 +244,7 @@ class DAO {
         foreach ($queries as $query) {
             $statement = $this->fluentPDO->getPdo()->query($query);
             if (!$statement)
-                throw new DatabaseException('Error occurred while recreating meta-model scheme');
+                throw new DAOException('Error occurred while recreating meta-model scheme');
         }
 
         return true;
@@ -254,5 +280,20 @@ class DAO {
                 break;
         }
         return $valueField;
+    }
+
+    private function getObjectAttributes($object_id) {
+        $adata = $this->fluentPDO->from(DAO::META_ATTRIBUTES_TABLE)
+                                 ->leftJoin(DAO::META_OBJECT_TABLE . ' ON ' . DAO::META_ATTRIBUTES_TABLE . '.object_type_id = ' . DAO::META_OBJECT_TABLE . '.object_type_id')
+                                 ->where(DAO::META_OBJECT_TABLE . '.object_id', $object_id)
+                                 ->fetchAll();
+        $attributes = array();
+        foreach ($adata as $value) {
+            $attributes[$value['name']] = $value['attr_id'];
+        }
+
+        return $attributes;
+
+
     }
 }
