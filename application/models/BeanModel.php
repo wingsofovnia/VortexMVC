@@ -8,9 +8,9 @@
 
 namespace Application\Models;
 
-use Vortex\Database\DAOEntity;
+use Vortex\Database\DAO\Entity;
 
-class BeanModel extends DAOEntity {
+class BeanModel extends Entity {
     private $privateProp = '_private';
     protected $protectedProp = '_protected';
     public $publicProp = '_public';

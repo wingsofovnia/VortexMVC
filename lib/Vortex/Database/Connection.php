@@ -7,6 +7,7 @@
 
 namespace Vortex\Database;
 use Vortex\Config;
+use Vortex\Database\DAO\Manager;
 use Vortex\Logger;
 
 /**
@@ -56,7 +57,7 @@ class Connection {
                 Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
 
-        $this->dao = new DAO($this->connection);
+        $this->dao = new Manager($this->connection);
         Logger::debug("Connected to database!");
     }
 
@@ -75,7 +76,7 @@ class Connection {
 
     /**
      * Gets a DAO object
-     * @return DAO instance
+     * @return Manager instance
      */
     public static function getDAO() {
         if (is_null(self::$_instance)) {

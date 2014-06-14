@@ -6,12 +6,11 @@
  * Time: 21:53
  */
 
-namespace Vortex\Database;
-
+namespace Vortex\Database\DAO;
+use Vortex\Database\Connection;
 use Vortex\Exceptions\DAOException;
-use Vortex\Logger;
 
-abstract class DAOEntity {
+abstract class Entity {
     protected $_object_id;
 
     public function save() {
@@ -33,13 +32,11 @@ abstract class DAOEntity {
         $object_type_name = $ref->getName();
         $params = $additions == array() ? $objectData['attributes'] : array_merge($objectData['attributes'], $additions);
 
-        $obj = $dao->find($object_type_name, $params);
+        $obj = $dao->findObjectIds($object_type_name, $params);
         if (!$obj)
-            return false;
+            throw new DAOException('Can\'t find such object');
 
-        $object_id = is_array($obj) ? $obj[0] : $obj;
-
-        $this->_object_id = $object_id;
+        $this->_object_id = $obj[0];
         return true;
     }
 
@@ -51,5 +48,9 @@ abstract class DAOEntity {
                 throw new DAOException('Object_id is not specified and finding with additions failed. No such object!');
         }
         return $dao->delete($this->_object_id);
+    }
+
+    public final function getObjectId() {
+        return $this->_object_id;
     }
 } 

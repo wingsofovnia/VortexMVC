@@ -142,6 +142,14 @@ class Request {
     }
 
     /**
+     * Checks if user uses secure connection (HTTPS)
+     * @return bool true, if HTTPS
+     */
+    public function isHTTPS() {
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+    }
+
+    /**
      * Gets a value of header from request
      * @param string $header a name of header
      * @return string|null a headers value, if there is no such header - null
@@ -179,7 +187,23 @@ class Request {
     }
 
     /**
-     * Parses the URL
+     * Gets a name of controller parsed from url
+     * @return string controller's name
+     */
+    public function getController() {
+        return $this->controller;
+    }
+
+    /**
+     * Gets a name of action parsed from url
+     * @return string action's name
+     */
+    public function getAction() {
+        return $this->action;
+    }
+
+    /**
+     * Parses the requested controller and action in URL
      */
     private function parseURL() {
         $args = explode('/', $this->url);
@@ -217,21 +241,5 @@ class Request {
             $url = rtrim($url, '/');
         $url = preg_replace('/\s+/', '', $url);
         $this->url = preg_replace('/[^A-Za-z0-9\-]/', '', $url);
-    }
-
-    /**
-     * Gets a name of controller parsed from url
-     * @return string controller's name
-     */
-    public function getController() {
-        return $this->controller;
-    }
-
-    /**
-     * Gets a name of action parsed from url
-     * @return string action's name
-     */
-    public function getAction() {
-        return $this->action;
     }
 }
