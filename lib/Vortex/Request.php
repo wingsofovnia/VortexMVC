@@ -19,10 +19,8 @@ class Request {
     private $cookies;
     private $params;
     private $method;
-    private $url;
 
-    private $controller;
-    private $action;
+    private $router;
 
     /**
      * Init constructor
@@ -43,12 +41,9 @@ class Request {
         $this->params = new Registry();
         $this->method = $_SERVER['REQUEST_METHOD'];
 
-        $this->controller = Config::getInstance()->controller->default;
-        $this->action = Config::getInstance()->action->default;
-        $this->url = $_SERVER['REQUEST_URI'];
-
-        $this->cleanURL();
-        $this->parseURL();
+        $this->router = new Router($_SERVER['REQUEST_URI']);
+        $this->router->parse();
+        $this->params->merge($this->router->getParams());
     }
 
     /**
@@ -183,7 +178,7 @@ class Request {
      * @return string a request url
      */
     public function getRequestUrl() {
-        return $this->url;
+        return $this->router->getUrl();
     }
 
     /**
@@ -191,7 +186,7 @@ class Request {
      * @return string controller's name
      */
     public function getController() {
-        return $this->controller;
+        return $this->router->getController();
     }
 
     /**
@@ -199,47 +194,6 @@ class Request {
      * @return string action's name
      */
     public function getAction() {
-        return $this->action;
-    }
-
-    /**
-     * Parses the requested controller and action in URL
-     */
-    private function parseURL() {
-        $args = explode('/', $this->url);
-        if (count($args) == 0)
-            return;
-        $args = array_filter($args);
-        $args = array_map('trim', $args);
-        $args = array_map('strtolower', $args);
-        $args = array_values($args);
-        $num = count($args);
-        if ($num > 0) {
-            $this->controller = ucfirst($args[0]);
-            if ($num > 1) {
-                $this->action = $args[1];
-                if ($num > 2) {
-                    for ($i = 2; $i < $num; $i++) {
-                        if (($i + 1) < $num) {
-                            $this->params->$args[$i] = $args[$i + 1];
-                            $i++;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Service method to clean URL from HOST name and special chars
-     */
-    private function cleanURL() {
-        $url = urldecode($this->url);
-        if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
-            $url =  substr($url, strpos($url, $_SERVER['SERVER_NAME']));
-        if (strlen($url) > 1)
-            $url = rtrim($url, '/');
-        $url = preg_replace('/\s+/', '', $url);
-        $this->url = preg_replace('/[^A-Za-z0-9\-]/', '', $url);
+        return $this->router->getAction();
     }
 }

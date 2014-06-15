@@ -10,6 +10,7 @@
 namespace Vortex;
 use ArrayObject;
 use IniParser;
+use Vortex\Cache\Cache;
 use Vortex\Cache\CacheFactory;
 
 require LIB_PATH . '/Utils/IniParser.php';
@@ -46,7 +47,11 @@ class Config extends IniParser {
         parent::__construct($file);
 
         /* Caching configs... */
-        $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array('namespace' => 'vConfig'));
+        $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array(
+            'namespace' => 'vf_config',
+            'lifetime'  => Cache::UNLIMITED_LIFE_TIME
+        ));
+
         $configCacheId = md5($file);
         $this->config = $cache->load($configCacheId);
         if (!$this->config) {

@@ -12,6 +12,11 @@ use Vortex\View;
 
 class IndexController extends Controller {
 
+    /**
+     * @RequestMapping('/customMapping');
+     * @Redirect('index', 'index');
+     * @Permission('admin','logger');
+     */
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
         $view = new View('index');

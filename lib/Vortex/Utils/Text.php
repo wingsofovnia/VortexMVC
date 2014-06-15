@@ -54,4 +54,12 @@ abstract class Text {
         $str = str_replace("&", "and", html_entity_decode($str));
         return trim(preg_replace('/[^\p{L}\p{N}]/u', '-', strtolower($str)), '-');
     }
+
+    public static function startsWith($string, $needle) {
+        return $needle === "" || strpos($string, $needle) === 0;
+    }
+
+    public static function endsWith($string, $needle) {
+        return $needle === "" || substr($string, -strlen($needle)) === $needle;
+    }
 } 

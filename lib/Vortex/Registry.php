@@ -40,4 +40,20 @@ class Registry {
     public function getVars() {
         return $this->vars;
     }
+
+    /**
+     * Merges it's vars with another Registry or array
+     * @param Registry|array $data data to merge
+     * @return bool true, if operation was successful
+     */
+    public function merge($data) {
+        if (is_object($data) && is_a($data, 'Vortex\Registry')) {
+            $this->vars = array_merge($this->vars, $data->getVars());
+            return true;
+        } else if (is_array($data)) {
+            $this->vars = array_merge($this->vars, $data);
+            return true;
+        }
+        return false;
+    }
 } 
