@@ -8,12 +8,17 @@
 
 namespace Vortex;
 
-
 use Vortex\Cache\Cache;
 use Vortex\Cache\CacheFactory;
-use Vortex\Utils\Service;
 use Vortex\Utils\Text;
 
+/**
+ * Class Router
+ * This class defines, what controller and it's action should be executed, based on URL string
+ * and predefined routers/redirects with annotations of controller's actions
+ *
+ * @package Vortex
+ */
 class Router {
     private $url;
 
@@ -81,30 +86,37 @@ class Router {
      * Runs router's processing param1/val1/param2/val2
      */
     public function parse() {
+        /* Reading for predefined routes and redirects from annotations */
         $this->parseRoutes();
 
+        /* First, looking if some action requested mapping for this url */
         $predefined = false;
         foreach ($this->routes['mapping'] as $route => $path) {
             if (Text::startsWith($this->url, $route)) {
-                $this->controller = ucfirst(strtolower($path['controller']));
-                $this->action = strtolower($path['action']);
+                /* Defining controller and action */
+                $this->controller = $path['controller'];
+                $this->action = $path['action'];
+
+                /* Other part of url may contain params. Trying to parse it */
+                $this->mergeUrlParams(explode('/', ltrim(str_replace($route,'',$this->url), '/')));
+
                 Logger::debug('Predefined route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
                 $predefined = true;
                 break;
             }
         }
 
+        /* If it not predefined, we should parse ours url and determine what to open */
         if (!$predefined) {
             $this->parseURL();
             Logger::debug('Parsed route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
         }
 
-
+        /* In the end, our identified action can have @Redirect annotation. Checking this.. */
         if (isset($this->routes['redirect'][$this->controller][$this->action])) {
             $ctrl = $this->controller;
-            $actn = $this->action;
-            $this->controller = $this->routes['redirect'][$ctrl][$actn]['controller'];
-            $this->action = $this->routes['redirect'][$ctrl][$actn]['action'];
+            $this->controller = $this->routes['redirect'][$ctrl][$this->action]['controller'];
+            $this->action = $this->routes['redirect'][$ctrl][$this->action]['action'];
             Logger::debug('Redirected to = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
         }
     }
@@ -113,45 +125,53 @@ class Router {
      * Parses routes form controller's annotations
      */
     private function parseRoutes() {
+        /* Init cache object */
         $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array(
             'namespace' => 'vf_router',
             'lifetime'  => Cache::UNLIMITED_LIFE_TIME
         ));
 
+        /* Checking if annotations have already parsed */
         $routes = $cache->load('annotations');
         if ($routes) {
             $this->routes = $routes;
             return;
         }
 
-        $appNamespace = 'Application\Controllers\\';
+        /* Asking for all annotations for classes and their methods in dir Controllers */
+        $dir = APPLICATION_PATH.'/controllers/';
+        $filter = '*Controller';
+        $classNamespace = 'Application\Controllers\\';
+        $annotations = Annotation::getAllClassFilesAnnotations($dir, $filter, $classNamespace);
 
+        /* Retrieving Annotation::REQUEST_MAPPING and Annotation::REDIRECT data */
         $routes = array('mapping' => array(), 'redirect' => array());
-        foreach(glob(APPLICATION_PATH.'/controllers/*Controller.php') as $file) {
-            $controllerName = basename($file, "Controller.php");
-            $controller = $appNamespace . $controllerName . 'Controller';
-            $methodsAnnotations = Annotation::getAllMethodsAnnotations($controller);
-
-            foreach ($methodsAnnotations as $action => $data) {
-                if (!Text::endsWith($action, 'Action'))
+        foreach ($annotations as $className => $data) {
+            $controller = str_replace('Controller', '', $className);
+            foreach ($data['methods'] as $methodName => $methodAnnotations) {
+                if (!Text::endsWith($methodName, 'Action'))
                     continue;
-                $action = str_replace('Action', '', $action);
-                if (isset($data[Annotation::REDIRECT])) {
-                    $routes['redirect'][$controllerName][$action] = array(
-                        'controller'    =>  $data[Annotation::REDIRECT][0],
-                        'action'        =>  $data[Annotation::REDIRECT][1]
+                $action = str_replace('Action', '', $methodName);
+
+                if (isset($methodAnnotations[Annotation::REDIRECT])) {
+                    $routes['redirect'][$controller][$action] = array(
+                        'controller'    =>  $methodAnnotations[Annotation::REDIRECT][0],
+                        'action'        =>  $methodAnnotations[Annotation::REDIRECT][1]
                     );
                 }
-                if (isset($data[Annotation::REQUEST_MAPPING])) {
-                    $routes['mapping'][$data[Annotation::REQUEST_MAPPING][0]] = array(
-                        'controller'    =>  $controllerName,
+
+                if (isset($methodAnnotations[Annotation::REQUEST_MAPPING])) {
+                    $routes['mapping'][$methodAnnotations[Annotation::REQUEST_MAPPING][0]] = array(
+                        'controller'    =>  $controller,
                         'action'        =>  $action
                     );
                 }
             }
         }
+
+        /* Caching */
         $cache->save('annotations', $routes);
-        Logger::debug($routes);
+
         $this->routes = $routes;
     }
 
@@ -172,23 +192,28 @@ class Router {
             if ($num > 1) {
                 $this->action = $args[1];
                 if ($num > 2) {
-                    $this->params = array_merge($this->params, $this->parseUrlParams(array_slice($args, 2)));
+                    $this->mergeUrlParams(array_slice($args, 2));
                 }
             }
         }
     }
 
-    public function parseUrlParams(array $url) {
-        $params = array();
+    /**
+     * Merges an array of params from exploded url to Router params
+     * @param array $url array of [param1, val1, param2, val2...]
+     */
+    private function mergeUrlParams(array $url) {
         $length = count($url);
+        if (!$length)
+            return;
+        $params = array();
         for ($i = 0; $i < $length; $i++) {
             if (($i + 1) < $length) {
                 $params[$url[$i]] = $url[$i + 1];
                 $i++;
             }
         }
-
-        return $params;
+        $this->params = array_merge($this->params, $params);
     }
 
     /**
@@ -207,4 +232,4 @@ class Router {
         $url = preg_replace('/[^A-Za-z0-9\-\/]/', '', $url);
         return $url;
     }
-} 
+}
