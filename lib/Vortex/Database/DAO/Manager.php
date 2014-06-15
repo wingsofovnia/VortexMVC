@@ -58,8 +58,13 @@ class Manager {
             $value = $objectData['attributes'][$name];
             $prep = $this->prepareParam($value);
 
-            if (is_object($prep['value']))
-                $prep['value'] = $this->insert($prep['value']);
+            if (is_object($prep['value'])) {
+                $child_object_id = $prep['value']->getObjectId();
+                if (!$child_object_id)
+                    $prep['value'] = $this->insert($prep['value']);
+                else
+                    $prep['value'] = $child_object_id;
+            }
 
             $toInsert = array(
                 'object_id'     =>  $object_id,
