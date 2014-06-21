@@ -8,12 +8,16 @@
 
 namespace Vortex\Cache;
 
+use Vortex\ArrayObjectMagic;
 use Vortex\Cache\Drivers\CacheBackend;
+use Vortex\Config;
 use Vortex\Exceptions\CacheException;
 use Vortex\Logger;
 
 abstract class CacheFactory {
     const FILE_DRIVER = 'FileBackend';
+
+    public static $masterSwitch;
 
     /**
      * Constructs a cache object based on specific adapter and it's options
@@ -42,10 +46,16 @@ abstract class CacheFactory {
             Logger::warning('Namespace was not specified. Using CacheBackend::DEFAULT_NAMEPSACE instead!');
         }
 
+        $options['masterSwitch'] = self::$masterSwitch;
+        if (!$options['masterSwitch'])
+            Logger::warning("Warning! Global cache switch: " . $options['masterSwitch'] . '! Nothing will be cached!');
+
         $cacheObject = new $driver();
         $cacheObject->config($options);
         $cacheObject->check();
 
         return $cacheObject;
     }
-} 
+}
+
+CacheFactory::$masterSwitch = Config::getInstance()->cache->enabled(true);

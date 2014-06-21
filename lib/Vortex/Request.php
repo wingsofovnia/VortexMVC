@@ -41,7 +41,7 @@ class Request {
         $this->params = new Registry();
         $this->method = $_SERVER['REQUEST_METHOD'];
 
-        $this->router = new Router($_SERVER['REQUEST_URI']);
+        $this->router = new Router($this);
         $this->router->parse();
         $this->params->merge($this->router->getParams());
     }
@@ -171,6 +171,14 @@ class Request {
             }
         }
         return null;
+    }
+
+    /**
+     * Gets a not cleaned URL
+     * @return string a request url
+     */
+    public function getRawUrl() {
+        return $_SERVER['REQUEST_URI'];
     }
 
     /**

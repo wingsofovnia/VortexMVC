@@ -3,7 +3,8 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 15-Jun-14
- * Time: 10:40
+ *
+ * @package Vortex
  */
 
 namespace Vortex;
@@ -21,6 +22,7 @@ use Vortex\Utils\Text;
  */
 class Router {
     private $url;
+    private $req;
 
     private $routes;
 
@@ -29,18 +31,21 @@ class Router {
     private $params;
 
 
-    public function __construct($url = '/') {
-        $cleaned = $this->cleanURL($url);
-        if (empty($cleaned))
-            $cleaned = '/';
-        $this->setUrl($cleaned);
-        $this->controller = ucfirst(strtolower(Config::getInstance()->controller->default));
-        $this->action = strtolower(Config::getInstance()->action->default);
+    /**
+     * Inits a router
+     * @param Request $request
+     */
+    public function __construct($request) {
+        $this->req = $request;
+        $this->setUrl($this->req->getRawUrl());
+
+        $this->controller = Config::getInstance()->controller->default;
+        $this->action = Config::getInstance()->action->default;
         $this->params = array();
     }
 
     /**
-     * Gets a url that need to be routed
+     * Gets a url that should be routed
      * @return string url
      */
     public function getUrl() {
@@ -55,7 +60,7 @@ class Router {
     public function setUrl($url) {
         if (empty($url))
             throw new \InvalidArgumentException('Param $url should be not empty!');
-        $this->url = $url;
+        $this->url = $this->cleanURL($url);
     }
 
     /**
@@ -91,14 +96,24 @@ class Router {
 
         /* First, looking if some action requested mapping for this url */
         $predefined = false;
+        Logger::debug($this->url);
         foreach ($this->routes['mapping'] as $route => $path) {
-            if (Text::startsWith($this->url, $route)) {
+            Logger::debug($route);
+            if (preg_match($route, $this->url, $params)) {
+                /* Wait! Maybe route has particular METHOD? */
+                if (isset($path['method']) && strcasecmp($path['method'], $this->req->getMethod()) != 0) {
+                    Logger::warning("Router caught a predefined route #" . $route. "#, but it's method is #"
+                        . $path['method'] . "# while method of request is #" . $this->req->getMethod() . '#');
+                    continue;
+                }
+
                 /* Defining controller and action */
                 $this->controller = $path['controller'];
                 $this->action = $path['action'];
 
-                /* Other part of url may contain params. Trying to parse it */
-                $this->mergeUrlParams(explode('/', ltrim(str_replace($route,'',$this->url), '/')));
+                /* Other part of url may contain params. Lets try to merge them */
+                $params = $this->explodeUrl(str_replace(array_shift($params), '', $this->url));
+                $this->mergeUrlParams($params);
 
                 Logger::debug('Predefined route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
                 $predefined = true;
@@ -161,17 +176,24 @@ class Router {
                 }
 
                 if (isset($methodAnnotations[Annotation::REQUEST_MAPPING])) {
-                    $routes['mapping'][$methodAnnotations[Annotation::REQUEST_MAPPING][0]] = array(
+                    if (!isset($methodAnnotations[Annotation::REQUEST_MAPPING][0]))
+                        throw new \InvalidArgumentException("Bad REQUEST_MAPPING annotation");
+
+                    $route =  '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
+                    $routes['mapping'][$route] = array(
                         'controller'    =>  $controller,
-                        'action'        =>  $action
+                        'action'        =>  $action,
                     );
+
+                    if (isset($methodAnnotations[Annotation::REQUEST_MAPPING][1]))
+                        $routes['mapping'][$route]['method'] =
+                            $methodAnnotations[Annotation::REQUEST_MAPPING][1];
                 }
             }
         }
 
         /* Caching */
         $cache->save('annotations', $routes);
-
         $this->routes = $routes;
     }
 
@@ -179,23 +201,34 @@ class Router {
      * Parses the requested controller and action in URL
      */
     private function parseURL() {
-        $args = explode('/', $this->url);
-        if (count($args) == 0)
+        $args = $this->explodeUrl();
+        if (!$args)
             return;
+
+        $this->controller = ucfirst($args[0]);
+        if (isset($args[1]))
+            $this->action = $args[1];
+
+        if (isset($args[2]))
+            $this->mergeUrlParams(array_slice($args, 2));
+    }
+
+    /**
+     * Explodes a url into parts
+     * @param string $url url to parse (default - $this->url)
+     * @return array|false exploded url
+     */
+    private function explodeUrl($url = null) {
+        if (!$url)
+            $url = $this->url;
+        $args = explode('/', $url);
         $args = array_filter($args);
+        if (count($args) == 0)
+            return false;
+
         $args = array_map('trim', $args);
-        $args = array_map('strtolower', $args);
         $args = array_values($args);
-        $num = count($args);
-        if ($num > 0) {
-            $this->controller = ucfirst($args[0]);
-            if ($num > 1) {
-                $this->action = $args[1];
-                if ($num > 2) {
-                    $this->mergeUrlParams(array_slice($args, 2));
-                }
-            }
-        }
+        return $args;
     }
 
     /**
@@ -222,7 +255,7 @@ class Router {
      * @return string a cleaned url
      */
     private function cleanURL($url) {
-        //$url = urldecode($this->url);
+        $url = html_entity_decode($url);
         if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
             $url =  substr($url, strpos($url, $_SERVER['SERVER_NAME']));
         if (strlen($url) == 1)
@@ -230,6 +263,6 @@ class Router {
         $url = rtrim($url, '/');
         $url = preg_replace('/\s+/', '', $url);
         $url = preg_replace('/[^A-Za-z0-9\-\/]/', '', $url);
-        return $url;
+        return strtolower($url);
     }
 }

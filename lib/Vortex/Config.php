@@ -61,7 +61,7 @@ class Config extends IniParser {
 
         /* Determining environment */
         $stage = $this->config->environment('production');
-        if (!isset($this->config->$stage))
+        if (!is_object($this->config->$stage))
             throw new \RuntimeException('Settings file doesn\'t have <' . $stage . '> stage!');
         self::$production = $stage == 'production';
         $this->config = $this->config->$stage;
@@ -74,7 +74,7 @@ class Config extends IniParser {
      */
     protected function getArrayValue($array = array()) {
         if ($this->use_array_object) {
-            return new ArrayObjectMagic($array, ArrayObjectMagic::ARRAY_AS_PROPS);
+            return new ArrayObjectMagic($array);
         } else {
             return $array;
         }
@@ -100,11 +100,16 @@ class Config extends IniParser {
  */
 class ArrayObjectMagic extends ArrayObject {
     public function __call($method, $args) {
-        if (isset($this->$method))
-            return $this->$method;
-        return isset($args[0]) ? $args[0] : new ArrayObjectMagic();
+        if (isset($this[$method]))
+            return $this[$method];
+        if (isset($args[0]))
+            return $args[0];
+        return new ArrayObjectMagic();
     }
     public function __get($name) {
-        return new ArrayObjectMagic();
+        if (isset($this[$name]))
+            return $this[$name];
+        $magic = new ArrayObjectMagic();
+        return $magic;
     }
 }

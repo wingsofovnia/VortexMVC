@@ -18,6 +18,8 @@ class FileBackend implements CacheBackend {
     private $cacheExtension;
     private $path;
 
+    private $enabled;
+
     public function check() {
         $path = $this->getPath();
         if (!file_exists($path)) {
@@ -35,11 +37,14 @@ class FileBackend implements CacheBackend {
         $this->cacheExtension = isset($options['extension']) ? $options['extension'] : '.cache';
         $this->defaultLifetime = $options['lifetime'];
         $this->namespace = $options['namespace'];
+        $this->enabled = $options['masterSwitch'];
         Logger::info('FileBackend = {"path" => ' . $this->path . '", "cacheExtension" => ' . $this->cacheExtension .
         ', "defaultLifetime" => ' . $this->defaultLifetime . ', "namespace" => ' . $this->namespace);
     }
 
     public function save($id, $data = null, $time = null) {
+        if (!$this->enabled)
+            return false;
         if (!$time)
             $time = $this->defaultLifetime;
         $path = $this->getPath($id);
@@ -55,6 +60,8 @@ class FileBackend implements CacheBackend {
     }
 
     public function load($id) {
+        if (!$this->enabled)
+            return false;
         $path = $this->getPath($id);
         Logger::debug('Check ' . $path);
         if (!file_exists($path))

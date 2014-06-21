@@ -61,4 +61,3 @@ class Application {
         Logger::level(Config::getInstance()->logger->level(0));
     }
 }
-

@@ -20,7 +20,18 @@ class IndexController extends Controller {
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
         $view = new View('index');
-        $view->data->firstWords = 'Hello World!';
+        $view->data->firstWords = 'Hello World! It\'s a indexAction!';
+        $view->render();
+    }
+
+    /**
+     * @RequestMapping('/customMapping2', 'GET');
+     * @Redirect('index', 'index');
+     * @Permission('admin','logger');
+     */
+    public function indexPOSTAction() {
+        $view = new View('index');
+        $view->data->firstWords = 'Hello World!  It\'s a indexPOSTAction!';
         $view->render();
     }
 }

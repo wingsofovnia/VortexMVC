@@ -12,7 +12,18 @@ namespace Vortex;
  * This class is a simple Registry (key-value storage) implementation
  */
 class Registry {
-    private $vars = array();
+    protected $vars;
+
+    /**
+     * Create registry on a basis of existing array
+     * @param array $array an array (default - array())
+     * @throws \InvalidArgumentException
+     */
+    public function __construct($array = array()) {
+        if (!is_array($array))
+            throw new \InvalidArgumentException('Only arrays allowed for registry!');
+        $this->vars = $array;
+    }
 
     /**
      * Value setter

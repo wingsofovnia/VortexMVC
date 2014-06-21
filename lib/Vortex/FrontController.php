@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Rostislav Khanyukov
+ * Author: Illia Ovchynnikov, Rostislav Khanyukov
  * Date: 19-May-14
  *
  * @package Vortex
@@ -14,8 +14,6 @@ class FrontController {
 	private $config;
 	private $request;
 	private $response;
-
-    private $asyncSpecialized = true;
 	
 	public function __construct() {
         $this->request  = new Request();
@@ -43,20 +41,6 @@ class FrontController {
         $this->response->sendPacket();
     }
 
-    /**
-     * Enables friendly action for XmlHttpRequests
-     */
-    public function enableAsyncAction() {
-        $this->asyncSpecialized = true;
-    }
-
-    /**
-     * Disables friendly action for XmlHttpRequests
-     */
-    public function disableAsyncAction() {
-        $this->asyncSpecialized = false;
-    }
-
 	/**
      * Runs an action of controller
      * @param string $controller name of controller
@@ -65,15 +49,10 @@ class FrontController {
      */
     private function runAction($controller, $action) {
         $controller .= 'Controller';
-        $asyncAction = $action . 'AsyncAction';
         $action .= 'Action';
 
         $controller = 'Application\Controllers\\' . $controller;
         $controller = new $controller($this->request, $this->response);
-
-        /* Checking if AsyncAction should be used */
-        if ($this->asyncSpecialized && $this->request->isXMLHttpRequest())
-            $action = $asyncAction;
 
         if (is_callable(array($controller, $action)) == false)
             throw new FrontException('Action <' . $action . '> does\'t exists!');
