@@ -21,6 +21,8 @@ use Vortex\Utils\Text;
  * @package Vortex
  */
 class Router {
+    const ROUTE_METHOD_ALL = -1;
+
     private $url;
     private $req;
 
@@ -97,27 +99,25 @@ class Router {
         /* First, looking if some action requested mapping for this url */
         $predefined = false;
         Logger::debug($this->url);
-        foreach ($this->routes['mapping'] as $route => $path) {
-            Logger::debug($route);
-            if (preg_match($route, $this->url, $params)) {
-                /* Wait! Maybe route has particular METHOD? */
-                if (isset($path['method']) && strcasecmp($path['method'], $this->req->getMethod()) != 0) {
-                    Logger::warning("Router caught a predefined route #" . $route. "#, but it's method is #"
-                        . $path['method'] . "# while method of request is #" . $this->req->getMethod() . '#');
-                    continue;
+        foreach ($this->routes['mapping'] as $method => $routes) {
+            if ($method != self::ROUTE_METHOD_ALL && strcasecmp($method, $this->req->getMethod()) != 0)
+                continue;
+
+            foreach ($routes as $route) {
+                $pattern = $route['pattern'];
+                if (preg_match($pattern, $this->url, $params)) {
+                    /* Defining controller and action */
+                    $this->controller = $route['controller'];
+                    $this->action = $route['action'];
+
+                    /* Other part of url may contain params. Lets try to merge them */
+                    $params = $this->explodeUrl(str_replace(array_shift($params), '', $this->url));
+                    $this->mergeUrlParams($params);
+
+                    Logger::debug('Predefined route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
+                    $predefined = true;
+                    break;
                 }
-
-                /* Defining controller and action */
-                $this->controller = $path['controller'];
-                $this->action = $path['action'];
-
-                /* Other part of url may contain params. Lets try to merge them */
-                $params = $this->explodeUrl(str_replace(array_shift($params), '', $this->url));
-                $this->mergeUrlParams($params);
-
-                Logger::debug('Predefined route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
-                $predefined = true;
-                break;
             }
         }
 
@@ -179,15 +179,15 @@ class Router {
                     if (!isset($methodAnnotations[Annotation::REQUEST_MAPPING][0]))
                         throw new \InvalidArgumentException("Bad REQUEST_MAPPING annotation");
 
-                    $route =  '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
-                    $routes['mapping'][$route] = array(
-                        'controller'    =>  $controller,
-                        'action'        =>  $action,
-                    );
+                    $pattern =  '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
+                    $method = isset($methodAnnotations[Annotation::REQUEST_MAPPING][1]) ?
+                        $methodAnnotations[Annotation::REQUEST_MAPPING][1] : self::ROUTE_METHOD_ALL;
 
-                    if (isset($methodAnnotations[Annotation::REQUEST_MAPPING][1]))
-                        $routes['mapping'][$route]['method'] =
-                            $methodAnnotations[Annotation::REQUEST_MAPPING][1];
+                    $routes['mapping'][$method][] = array(
+                        'pattern'       =>  $pattern,
+                        'controller'    =>  $controller,
+                        'action'        =>  $action
+                    );
                 }
             }
         }

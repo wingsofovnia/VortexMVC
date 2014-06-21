@@ -6,6 +6,7 @@
  */
 
 namespace Vortex;
+use Exception;
 
 /**
  * Class Vortex_Logger
@@ -79,6 +80,10 @@ class Logger {
         self::messageBody($txt, self::ERROR);
     }
 
+    /**
+     * Prints message as an exception
+     * @param mixed $txt message
+     */
     public static function exception($txt) {
         self::messageBody($txt, self::EXCEPTION);
     }

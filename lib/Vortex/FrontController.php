@@ -30,8 +30,12 @@ class FrontController {
         try {
             $this->runAction($this->request->getController(), $this->request->getAction());
         } catch (FrontException $e) {
+            if (!Config::isProduction())
+                throw $e;
             try {
-                $this->runAction($this->config->controller->error, $this->config->action->error);
+                $this->response->redirect('/' . $this->config->controller->error . '/' . $this->config->action->error
+                    . '/from/' . urlencode($this->request->getRequestUrl()));
+                //$this->runAction($this->config->controller->error, $this->config->action->error);
             } catch (FrontException $e) {
                 throw $e;
             }
@@ -52,10 +56,12 @@ class FrontController {
         $action .= 'Action';
 
         $controller = 'Application\Controllers\\' . $controller;
+        if (!class_exists($controller))
+            throw new FrontException('Controller #' . $controller . '# does\'t exists!');
         $controller = new $controller($this->request, $this->response);
 
         if (is_callable(array($controller, $action)) == false)
-            throw new FrontException('Action <' . $action . '> does\'t exists!');
+            throw new FrontException('Action #' . $action . '# does\'t exists!');
         $controller->$action();
     }
 }

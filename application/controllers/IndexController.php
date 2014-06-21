@@ -13,7 +13,7 @@ use Vortex\View;
 class IndexController extends Controller {
 
     /**
-     * @RequestMapping('/customMapping');
+     * @RequestMapping('/customMapping', 'GET');
      * @Redirect('index', 'index');
      * @Permission('admin','logger');
      */
@@ -25,7 +25,7 @@ class IndexController extends Controller {
     }
 
     /**
-     * @RequestMapping('/customMapping2', 'GET');
+     * @RequestMapping('/customMapping', 'POST');
      * @Redirect('index', 'index');
      * @Permission('admin','logger');
      */
