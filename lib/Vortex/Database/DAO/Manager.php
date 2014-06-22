@@ -3,7 +3,10 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 12-Jun-14
- * Time: 21:31
+ *
+ * @package Vortex
+ * @subpackage Database
+ * @subpackage DAO
  */
 
 namespace Vortex\Database\DAO;
@@ -15,6 +18,7 @@ class Manager {
     const META_OBJECT_TYPES_TABLE = 'vf_objectTypes';
     const META_PARAMS_TABLE = 'vf_params';
     const META_REFERENCES_TABLE = 'vf_references';
+    const META_UPDATE_TRIGGER_NAME = 'vf_update_checksum';
 
     private $fluentPDO;
 
@@ -22,14 +26,18 @@ class Manager {
         $this->fluentPDO = $pdo;
     }
 
+    /**
+     * Serializes object into metamodel
+     * @param Entity $object object <? extends Entity> to serialize
+     * @return int object_id of new record
+     * @throws \InvalidArgumentException
+     * @throws \Vortex\Exceptions\DAOException
+     */
     public function insert(Entity $object) {
         /* Parsing received object */
         $objectData = $this->readObject($object);
 
-        /* Checking DAO's tables */
-        if (!$this->checkTables())
-            $this->createMetaScheme();
-
+        /* Is it already exists? */
         $data = $this->fluentPDO->from(Manager::META_OBJECT_TABLE)
                                 ->where('checksum', $objectData['checksum'])
                                 ->fetch();
@@ -56,20 +64,10 @@ class Manager {
         /* Writing object's params */
         foreach ($objectMeta['attributes'] as $name => $attr_id) {
             $value = $objectData['attributes'][$name];
-            $prep = $this->prepareParam($value);
-
-            if (is_object($prep['value'])) {
-                $child_object_id = $prep['value']->getObjectId();
-                if (!$child_object_id)
-                    $prep['value'] = $this->insert($prep['value']);
-                else
-                    $prep['value'] = $child_object_id;
-            }
-
             $toInsert = array(
                 'object_id'     =>  $object_id,
                 'attr_id'       =>  $attr_id,
-                $prep['field']  =>  $prep['value']
+                $value['field'] =>  $value['value']
             );
             $this->fluentPDO->insertInto(Manager::META_PARAMS_TABLE, $toInsert)->execute();
         }
@@ -80,6 +78,12 @@ class Manager {
         return $object_id;
     }
 
+    /**
+     * Unserializes object from metamodel to PHP Entity object
+     * @param int $object_id an id of the object to unserialize
+     * @return Entity model object <? extends Entity>
+     * @throws DAOException
+     */
     public function select($object_id) {
         /* Reading attributes of object */
         $objectData = $this->fluentPDO->from(Manager::META_PARAMS_TABLE)
@@ -105,20 +109,32 @@ class Manager {
         return $this->createObject($object_type, $attributes);
     }
 
+    /**
+     * Finds object_id's of object, that meets the search criteria
+     * @param string $object_type name of the object_type
+     * @param array $params array of attr_name => attr_value pairs
+     * @return array|bool array of ids or false, if none found
+     */
     public function findObjectIds($object_type, $params) {
+        $attributes = array();
+        $values = array();
+        foreach ($params as $key => $value) {
+            $attributes[] = $key;
+            $values[Manager::META_PARAMS_TABLE . '.' . $value['field']][] = $value['value'];
+        }
+
         $query = $this->fluentPDO->from(Manager::META_PARAMS_TABLE)
                                  ->leftJoin(Manager::META_ATTRIBUTES_TABLE . ' ON ' . Manager::META_PARAMS_TABLE . '.attr_id = ' . Manager::META_ATTRIBUTES_TABLE . '.attr_id')
                                  ->leftJoin(Manager::META_OBJECT_TABLE . ' ON ' . Manager::META_PARAMS_TABLE . '.object_id = ' . Manager::META_OBJECT_TABLE . '.object_id')
                                  ->leftJoin(Manager::META_OBJECT_TYPES_TABLE . ' ON ' . Manager::META_OBJECT_TABLE . '.object_type_id = ' . Manager::META_OBJECT_TYPES_TABLE . '.object_type_id')
                                  ->where(Manager::META_OBJECT_TYPES_TABLE . '.name', $object_type)
-                                 ->select(Manager::META_OBJECT_TABLE . '.*');
-        foreach ($params as $key => $value) {
-            $query->where(Manager::META_ATTRIBUTES_TABLE . '.name', $key);
-            $prep = $this->prepareParam($value);
-            $query->where(Manager::META_PARAMS_TABLE . '.' . $prep['field'], $prep['value']);
-        }
+                                 ->select(Manager::META_OBJECT_TABLE . '.*')
+                                 ->where(Manager::META_ATTRIBUTES_TABLE . '.name', $attributes);
 
-        $objects = $query->fetchAll();
+        foreach ($values as $field => $val)
+            $query->where($field, $val);
+
+        $objects = $query->fetchAll('object_id');
         if (!$objects)
             return false;
 
@@ -129,6 +145,12 @@ class Manager {
         return $ids;
     }
 
+    /**
+     * The same with @see findObjectIds but returns cooked Entity objects
+     * @param string $object_type name of the object_type
+     * @param array $params array of attr_name => attr_value pairs
+     * @return array|bool array of objects <? extends Entity> or false, if none found
+     */
     public function findObjects($object_type, $params) {
         $object_ids = $this->findObjectIds($object_type, $params);
         if (!$object_ids)
@@ -157,14 +179,22 @@ class Manager {
         return $cookedObjects;
     }
 
+    /**
+     * Updates the existing record of object in metamodel
+     * Info! This method triggers a mysql trigger, to update md5 checksum of the object
+     * @param int $object_id id of the object to update
+     * @param array $set array of param => value pairs to update
+     * @return bool true, if everything is ok
+     * @throws \Vortex\Exceptions\DAOException
+     */
     public function update($object_id, $set = array()) {
         if (!$this->fluentPDO->getPdo()->inTransaction())
             $this->fluentPDO->getPdo()->beginTransaction();
 
         $attributes = $this->getObjectAttributes($object_id);
-        foreach ($set as $param_name => $param_value) {
-            $prep = $this->prepareParam($param_value);
+        foreach ($set as $param_name => $value) {
 
+            /* Deleting previous data */
             $delete = $this->fluentPDO->deleteFrom(Manager::META_PARAMS_TABLE)
                                       ->where('object_id', $object_id)
                                       ->where('attr_id', $attributes[$param_name])
@@ -174,26 +204,49 @@ class Manager {
                 throw new DAOException('Deleting param #' . $param_name . '# failed!');
             }
 
+            /* Inserting data */
             $toInsert = array(
                 'object_id'     =>  $object_id,
                 'attr_id'       =>  $attributes[$param_name],
-                $prep['field']  =>  $prep['value']
+                $value['field'] =>  $value['value']
             );
             $this->fluentPDO->insertInto(Manager::META_PARAMS_TABLE, $toInsert)
                             ->execute();
         }
+
+        /* Fixing changes */
         if ($this->fluentPDO->getPdo()->inTransaction())
             $this->fluentPDO->getPdo()->commit();
         return true;
     }
 
+    /**
+     * Deletes an object from metamodel
+     * @param int $object_id an id of the object
+     * @return bool
+     */
     public function delete($object_id) {
         $query = $this->fluentPDO->deleteFrom(Manager::META_OBJECT_TABLE)
+                                 ->where('object_id', $object_id)
+                                 ->execute();
+        if (empty($query))
+            return false;
+
+        $query = $this->fluentPDO->deleteFrom(Manager::META_PARAMS_TABLE)
                                  ->where('object_id', $object_id)
                                  ->execute();
         return !empty($query);
     }
 
+    /* Object transformation section */
+
+    /**
+     * Parses an Entity object
+     * @param Entity $object a object to parse
+     * @return array parsed object
+     * @throws \InvalidArgumentException
+     * @throws \Vortex\Exceptions\DAOException
+     */
     public function readObject($object) {
         if (!is_object($object))
             throw new \InvalidArgumentException('DAO is used only for saving objects!');
@@ -201,28 +254,73 @@ class Manager {
         if (!is_a($object, 'Vortex\Database\DAO\Entity'))
             throw new DAOException('Object should extends DAOEntity abstract class!');
 
-        $checksum = md5(json_encode($object));
+        /* This var collects data-picks from object, for making md5 checksum */
+        $heap = '';
 
-        $name = get_class ($object);
+        $name = get_class($object);
         $nameEsc = str_replace('\\', "\\\\", $name);
         $raw = (array)$object;
+        $heap .= $name;
 
         $attributes = array();
         foreach ($raw as $attr => $val) {
             $attr_name = trim(preg_replace('('.$nameEsc.'|\*|)', '', $attr));
+            /* Skip attributes with _ prefix (system) */
             if ($attr_name[0] === '_')
                 continue;
-            $attributes[$attr_name] = $val;
-        }
 
+            /* Determining a name of a field for this kind of data in metamodel */
+            $field = $this->determineParamField($val);
+
+            /* Processing complex types of data */
+            $val = $this->prepareValue($val);
+
+            $attributes[$attr_name] = array(
+                'field'     =>  $field,
+                'value'     =>  $val
+            );
+
+            $heap .= $val;
+        }
         return array(
             'object_type'   =>  $name,
-            'checksum'      =>  $checksum,
+            'checksum'      =>  md5($heap),
             'attributes'    =>  $attributes
         );
     }
 
+    /**
+     * Converts a value into appropriate for metamodel type
+     * @param mixed $value a value
+     * @return mixed a prepared value
+     */
+    private function prepareValue($value) {
+        if (is_object($value) && is_a($value, 'Vortex\Database\DAO\Entity')) {
+            $child_object_id = $value->getObjectId();
+            if (!$child_object_id)
+                $value->save();
+            $value = $value->getObjectId();
+        } else if (is_array($value)) {
+            $this->lazyArray($value);
+            $value = serialize($value);
+        } else if (is_bool($value)) {
+            $value = $value == true ? 1 : 0;
+        } else if (is_resource($value) || empty($value)) {
+            $value = '';
+        }
+        return $value;
+    }
+
+    /**
+     * Creates an user Entity object and fills it with params
+     * @param string $object_type name of the object's class
+     * @param array $attributes   array of property-value pairs
+     * @return Entity an object, with specified object type
+     * @throws DAOException
+     */
     public function createObject($object_type, $attributes) {
+        if (!class_exists($object_type))
+            throw new DAOException('Creating object #' . $object_type . '# failed because of missing class!');
         $obj = new $object_type();
         $refObject = new \ReflectionObject($obj);
 
@@ -234,24 +332,12 @@ class Manager {
         return $obj;
     }
 
-    private function getObjectMeta($objectType) {
-        $query = $this->fluentPDO->from(Manager::META_ATTRIBUTES_TABLE)
-                                 ->leftJoin(Manager::META_OBJECT_TYPES_TABLE . ' ON ' . Manager::META_ATTRIBUTES_TABLE . '.object_type_id = ' . Manager::META_OBJECT_TYPES_TABLE . '.object_type_id')
-                                 ->fetchAll();
-        if (!$query)
-            return false;
-
-        $attr_ids = array();
-        foreach ($query as $queryData)
-            $attr_ids[$queryData['name']] = $queryData['attr_id'];
-
-        return array(
-            'object_type'       =>  $objectType,
-            'object_type_id'    =>  $query[0]['object_type_id'],
-            'attributes'        =>  $attr_ids
-        );
-    }
-
+    /**
+     * Registers new object type
+     * @param string $object_type name of class
+     * @param array $attributes array of properties of this class
+     * @return array array of object type metadata
+     */
     private function registerObject($object_type, $attributes) {
         $objectID = $this->fluentPDO->insertInto(Manager::META_OBJECT_TYPES_TABLE, array(
             'name'   =>  $object_type
@@ -272,78 +358,41 @@ class Manager {
         );
     }
 
-    private function createMetaScheme() {
-        $queries[] = 'SET foreign_key_checks = 0;';
-        $queries[] = 'DROP TABLE IF EXISTS ' . Manager::META_ATTRIBUTES_TABLE . ';';
-        $queries[] = 'DROP TABLE IF EXISTS ' . Manager::META_OBJECT_TABLE . ';';
-        $queries[] = 'DROP TABLE IF EXISTS ' . Manager::META_OBJECT_TYPES_TABLE . ';';
-        $queries[] = 'DROP TABLE IF EXISTS ' . Manager::META_PARAMS_TABLE . ';';
-
-        $queries[] = 'CREATE TABLE ' . Manager::META_ATTRIBUTES_TABLE . ' ( attr_id int(11) NOT NULL AUTO_INCREMENT, object_type_id int(11) NOT NULL DEFAULT \'0\', name varchar(24) NOT NULL DEFAULT \'0\', PRIMARY KEY (attr_id), UNIQUE KEY name (name), KEY object_type_id (object_type_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-        $queries[] = 'CREATE TABLE ' . Manager::META_OBJECT_TABLE . ' ( object_id int(11) NOT NULL AUTO_INCREMENT, parent_id int(11) DEFAULT NULL, object_type_id int(11) DEFAULT NULL, checksum char(32) NOT NULL, PRIMARY KEY (object_id), KEY r_5 (object_type_id), KEY r_1 (parent_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-        $queries[] = 'CREATE TABLE ' . Manager::META_OBJECT_TYPES_TABLE . ' ( object_type_id int(11) NOT NULL, name varchar(32) DEFAULT NULL, PRIMARY KEY (object_type_id), UNIQUE KEY name (name) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-        $queries[] = 'CREATE TABLE ' . Manager::META_PARAMS_TABLE . ' ( object_id int(11) NOT NULL, attr_id int(11) NOT NULL, int_value int(11) DEFAULT NULL, boolean_value bit(1) DEFAULT NULL, float_value float DEFAULT NULL, text_value varchar(50) DEFAULT NULL, array_value varchar(512) DEFAULT NULL, reference_value int(11) DEFAULT NULL, KEY r_6 (object_id), KEY r_7 (attr_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-        //$queries[] = 'CREATE TABLE ' . DAO::META_REFERENCES_TABLE . ' ( attr_id int(10) NOT NULL, object_id int(10) NOT NULL, reference int(10) unsigned DEFAULT NULL, KEY FK_vf_reference_vf_params (attr_id), KEY FK_vf_reference_vf_objects (object_id) ) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
-
-        $queries[] = 'SET foreign_key_checks = 1;';
-        $queries[] = 'ALTER TABLE ' . Manager::META_ATTRIBUTES_TABLE . ' ADD CONSTRAINT meta_attributes_ibfk_1 FOREIGN KEY (object_type_id) REFERENCES ' . Manager::META_OBJECT_TYPES_TABLE . ' (object_type_id);';
-        $queries[] = 'ALTER TABLE ' . Manager::META_OBJECT_TABLE . ' ADD CONSTRAINT r_1 FOREIGN KEY (parent_id) REFERENCES ' . Manager::META_OBJECT_TABLE . ' (object_id) ON DELETE CASCADE, ADD CONSTRAINT r_5 FOREIGN KEY (object_type_id) REFERENCES ' . Manager::META_OBJECT_TYPES_TABLE . ' (object_type_id) ON DELETE CASCADE;';
-        $queries[] = 'ALTER TABLE ' . Manager::META_PARAMS_TABLE . ' ADD CONSTRAINT r_6 FOREIGN KEY (object_id) REFERENCES ' . Manager::META_OBJECT_TABLE . ' (object_id), ADD CONSTRAINT r_7 FOREIGN KEY (attr_id) REFERENCES ' . Manager::META_ATTRIBUTES_TABLE . ' (attr_id);';
-        //$queries[] = 'ALTER TABLE ' . DAO::META_REFERENCES_TABLE . ' ADD CONSTRAINT FK_vf_reference_vf_params FOREIGN KEY (attr_id) REFERENCES vf_params (attr_id), ADD CONSTRAINT FK_vf_reference_vf_objects FOREIGN KEY (object_id) REFERENCES vf_objects (object_id);';
-
-        $statement = $this->fluentPDO->getPdo()->query(implode('', $queries));
-        if (!$statement)
-            throw new DAOException('Error occurred while recreating meta-model scheme');
-
-        return true;
+    private function lazyArray(array &$array) {
+        array_walk_recursive($array, function(&$leaf) {
+            if (!is_a($leaf, 'Vortex\Database\DAO\Entity'))
+                return;
+            $object_id = $leaf->getObjectId();
+            if (!$object_id)
+                $leaf->save();
+            $leaf = new LazyEntity($leaf->getObjectId());
+        });
     }
 
-    private function checkTables() {
-        $check = array(Manager::META_ATTRIBUTES_TABLE, Manager::META_OBJECT_TABLE, Manager::META_OBJECT_TYPES_TABLE, Manager::META_PARAMS_TABLE);
-
-        foreach ($check as $table) {
-            $query = $this->fluentPDO->getPdo()->query('SELECT 1 FROM ' . $table);
-            if (!$query)
-                return false;
-        }
-        return true;
-    }
-
-    private function prepareParam($value) {
-        $preparedValue = $value;
-        switch (gettype($value)) {
-            case "boolean":
-                $field = 'boolean_value';
-                $preparedValue = $value == true ? 1 : 0;
-                break;
-            case "integer":
-                $field = 'int_value';
-                break;
-            case "double":
-                $field = 'float_value';
-                $preparedValue = (float) $value;
-                break;
-            case "float":
-                $field = 'float_value';
-                break;
-            case "array":
-                $field = 'array_value';
-                $preparedValue = json_encode($field);
-                break;
-            case "object":
-                $field = 'reference_value';
-                break;
-            default:
-                $field = 'text_value';
-                $preparedValue = (string)$value;
-                break;
-        }
-        return array(
-            'field'     =>  $field,
-            'value'     =>  $preparedValue
+    /**
+     * Determines in what column of metamodel this value should be placed
+     * @param mixed $value a value
+     * @return string a name of a column in META_PARAMS_TABLE
+     */
+    private function determineParamField($value) {
+        $fields = array(
+            'boolean'       =>  'boolean_value',
+            'integer'       =>  'int_value',
+            'double'        =>  'float_value',
+            'array'         =>  'array_value',
+            'object'        =>  'reference_value',
+            'string'        =>  'text_value'
         );
+
+        $valueType = gettype($value);
+        return isset($fields[$valueType]) ? $fields[$valueType] : $fields['string'];
     }
 
+    /**
+     * Reads a value from a set of values with META_PARAMS_TABLE value columns as their's keys
+     * @param array $paramFields array of (.*)_value => value pairs
+     * @return mixed a value
+     */
     private function readParamField($paramFields) {
         $filtered = array_intersect_key($paramFields, array_flip(array(
             'int_value', 'boolean_value', 'text_value', 'float_value', 'array_value', 'reference_value'
@@ -361,10 +410,10 @@ class Manager {
                         $param = (float)$value;
                         break;
                     case "array_value":
-                        $param = json_decode($value);
+                        $param = unserialize($value);
                         break;
                     case "reference_value":
-                        $param = new LazyObject($value);
+                        $param = new LazyEntity($value);
                         break;
                     default:
                         $param = (string)$value;
@@ -376,6 +425,11 @@ class Manager {
         return false;
     }
 
+    /**
+     * Gets a set of attributes of particular object type by object_id
+     * @param int $object_id object_id
+     * @return array an array of attr_name => attr_id values
+     */
     private function getObjectAttributes($object_id) {
         $adata = $this->fluentPDO->from(Manager::META_ATTRIBUTES_TABLE)
                                  ->leftJoin(Manager::META_OBJECT_TABLE . ' ON ' . Manager::META_ATTRIBUTES_TABLE . '.object_type_id = ' . Manager::META_OBJECT_TABLE . '.object_type_id')
@@ -386,5 +440,29 @@ class Manager {
             $attributes[$value['name']] = $value['attr_id'];
         }
         return $attributes;
+    }
+
+    /**
+     * Reads object type metadata from db, such as object_type_id and it's attributes
+     * @param string $objectType name of class
+     * @return array|bool array of metadata or false, if object was not registered in metamodel
+     */
+    private function getObjectMeta($objectType) {
+        $query = $this->fluentPDO->from(Manager::META_ATTRIBUTES_TABLE)
+                                 ->leftJoin(Manager::META_OBJECT_TYPES_TABLE . ' ON ' . Manager::META_ATTRIBUTES_TABLE . '.object_type_id = ' . Manager::META_OBJECT_TYPES_TABLE . '.object_type_id')
+                                 ->where(Manager::META_OBJECT_TYPES_TABLE . '.name', $objectType)
+                                 ->fetchAll();
+        if (!$query)
+            return false;
+
+        $attr_ids = array();
+        foreach ($query as $queryData)
+            $attr_ids[$queryData['name']] = $queryData['attr_id'];
+
+        return array(
+            'object_type'       =>  $objectType,
+            'object_type_id'    =>  $query[0]['object_type_id'],
+            'attributes'        =>  $attr_ids
+        );
     }
 }

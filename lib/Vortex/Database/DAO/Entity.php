@@ -9,6 +9,7 @@
 namespace Vortex\Database\DAO;
 use Vortex\Database\Connection;
 use Vortex\Exceptions\DAOException;
+use Vortex\Logger;
 
 abstract class Entity {
     protected $_object_id;
@@ -40,6 +41,11 @@ abstract class Entity {
         return true;
     }
 
+    public static function search($additions = array()) {
+        $dao = Connection::getDAO();
+        return $dao->findObjects(get_called_class(), $additions);
+    }
+
     public function delete($additions = array()) {
         $dao = Connection::getDAO();
         if (!$this->_object_id) {
@@ -51,6 +57,14 @@ abstract class Entity {
     }
 
     public final function getObjectId() {
+        if (!$this->_object_id)
+            $this->find();
         return $this->_object_id;
+    }
+
+    public function getObjectCheckSum() {
+        $dao = Connection::getDAO();
+        $objectData = $dao->readObject($this);
+        return $objectData['checksum'];
     }
 } 

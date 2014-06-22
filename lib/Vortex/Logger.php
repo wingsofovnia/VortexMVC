@@ -6,7 +6,6 @@
  */
 
 namespace Vortex;
-use Exception;
 
 /**
  * Class Vortex_Logger

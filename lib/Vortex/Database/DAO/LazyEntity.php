@@ -10,7 +10,7 @@ namespace Vortex\Database\DAO;
 
 use Vortex\Database\Connection;
 
-class LazyObject {
+class LazyEntity {
     private $object_id;
     private $object;
 
@@ -73,6 +73,6 @@ class LazyObject {
     }
 
     public function __toString() {
-        return 'LazyObject = {id: ' . $this->object_id . '}';
+        return 'LazyEntity = {id: ' . $this->object_id . '}';
     }
 }

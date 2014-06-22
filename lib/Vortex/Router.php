@@ -225,8 +225,6 @@ class Router {
         $args = array_filter($args);
         if (count($args) == 0)
             return false;
-
-        $args = array_map('trim', $args);
         $args = array_values($args);
         return $args;
     }
