@@ -21,6 +21,7 @@ require LIB_PATH . '/Utils/IniParser.php';
  */
 class Config extends IniParser {
     const CACHE_NAMESPACE_TAG = 'config';
+    const CACHE_TAG = 'vf_config';
     const APPLICATION_SETTINGS_FILE = '/application.ini';
     private static $_instance;
 
@@ -47,8 +48,8 @@ class Config extends IniParser {
         parent::__construct($file);
 
         /* Caching configs... */
-        $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array(
-            'namespace' => 'vf_config',
+        $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
+            'namespace' => CACHE_TAG,
             'lifetime'  => Cache::UNLIMITED_LIFE_TIME
         ));
 

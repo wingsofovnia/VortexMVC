@@ -10,6 +10,8 @@
  */
 
 namespace Vortex\Database\DAO;
+use Vortex\Cache\Cache;
+use Vortex\Cache\CacheFactory;
 use Vortex\Exceptions\DAOException;
 
 class Manager {
@@ -20,10 +22,23 @@ class Manager {
     const META_REFERENCES_TABLE = 'vf_references';
     const META_UPDATE_TRIGGER_NAME = 'vf_update_checksum';
 
-    private $fluentPDO;
+    const CACHE_TAG = 'vf_dao';
+    const CACHE_LIFETIME = 1036800; // 12 days
 
-    public function __construct(\FluentPDO $pdo) {
+    protected $fluentPDO;
+    protected $cache;
+
+    protected $cachingEnabled;
+
+    public function __construct(\FluentPDO $pdo, $cacheObject = true) {
         $this->fluentPDO = $pdo;
+
+        $this->cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
+            'namespace' => Manager::CACHE_TAG,
+            'lifetime'  => Manager::CACHE_LIFETIME
+        ));
+
+        $cacheObject ? $this->enableCache() : $this->disableCache();
     }
 
     /**
@@ -75,16 +90,28 @@ class Manager {
         /* Committing...whew */
         if ($this->fluentPDO->getPdo()->inTransaction())
             $this->fluentPDO->getPdo()->commit();
+
+        /* Caching object */
+        $this->cacheObject($object, $object_id);
         return $object_id;
     }
 
     /**
      * Unserializes object from metamodel to PHP Entity object
      * @param int $object_id an id of the object to unserialize
+     * @throws \InvalidArgumentException
+     * @throws \Vortex\Exceptions\DAOException
      * @return Entity model object <? extends Entity>
-     * @throws DAOException
      */
     public function select($object_id) {
+        if (!is_int($object_id))
+            throw new \InvalidArgumentException('$object_id must be int!');
+
+        /* Attemp to load Entity from cache */
+        $cachedObject = $this->loadObjectFromCache($object_id);
+        if (!is_null($cachedObject))
+            return $cachedObject;
+
         /* Reading attributes of object */
         $objectData = $this->fluentPDO->from(Manager::META_PARAMS_TABLE)
                                        ->where(Manager::META_PARAMS_TABLE . '.object_id', $object_id)
@@ -113,9 +140,12 @@ class Manager {
      * Finds object_id's of object, that meets the search criteria
      * @param string $object_type name of the object_type
      * @param array $params array of attr_name => attr_value pairs
+     * @throws \InvalidArgumentException
      * @return array|bool array of ids or false, if none found
      */
     public function findObjectIds($object_type, $params) {
+        if (!is_string($object_type) || !is_array($params))
+            throw new \InvalidArgumentException('$object_type must be string, and $params - array');
         $attributes = array();
         $values = array();
         foreach ($params as $key => $value) {
@@ -149,9 +179,12 @@ class Manager {
      * The same with @see findObjectIds but returns cooked Entity objects
      * @param string $object_type name of the object_type
      * @param array $params array of attr_name => attr_value pairs
+     * @throws \InvalidArgumentException
      * @return array|bool array of objects <? extends Entity> or false, if none found
      */
     public function findObjects($object_type, $params) {
+        if (!is_string($object_type) || !is_array($params))
+            throw new \InvalidArgumentException('$object_type must be string, and $params - array');
         $object_ids = $this->findObjectIds($object_type, $params);
         if (!$object_ids)
             return false;
@@ -184,13 +217,20 @@ class Manager {
      * Info! This method triggers a mysql trigger, to update md5 checksum of the object
      * @param int $object_id id of the object to update
      * @param array $set array of param => value pairs to update
-     * @return bool true, if everything is ok
+     * @throws \InvalidArgumentException
      * @throws \Vortex\Exceptions\DAOException
+     * @return bool true, if everything is ok
      */
     public function update($object_id, $set = array()) {
+        if (!is_int($object_id))
+            throw new \InvalidArgumentException('$object_id must be int!');
         if (!$this->fluentPDO->getPdo()->inTransaction())
             $this->fluentPDO->getPdo()->beginTransaction();
 
+        /* Deleting cache record */
+        $this->cache->delete($object_id);
+
+        /* Processing */
         $attributes = $this->getObjectAttributes($object_id);
         foreach ($set as $param_name => $value) {
 
@@ -217,15 +257,19 @@ class Manager {
         /* Fixing changes */
         if ($this->fluentPDO->getPdo()->inTransaction())
             $this->fluentPDO->getPdo()->commit();
+
         return true;
     }
 
     /**
      * Deletes an object from metamodel
      * @param int $object_id an id of the object
+     * @throws \InvalidArgumentException
      * @return bool
      */
     public function delete($object_id) {
+        if (!is_int($object_id))
+            throw new \InvalidArgumentException('$object_id must be int!');
         $query = $this->fluentPDO->deleteFrom(Manager::META_OBJECT_TABLE)
                                  ->where('object_id', $object_id)
                                  ->execute();
@@ -237,6 +281,32 @@ class Manager {
                                  ->execute();
         return !empty($query);
     }
+
+    /**
+     * Binds a parent object to Entity
+     * @param Entity $object_id a child object
+     * @param Entity $parent_id a parent object
+     * @throws \InvalidArgumentException
+     * @return bool false, if Entities with id IN($object_id, $parent_id) not found, or query failed, otherwise - true;
+     */
+    public function bindParent($object_id, $parent_id) {
+        if (!is_int($object_id) || !is_int($parent_id))
+            throw new \InvalidArgumentException('$object_id#' . $object_id . ' and $parent_id#' . $parent_id . ' must be int!');
+        $check = $this->fluentPDO->from(Manager::META_OBJECT_TABLE)
+                                 ->select(null)
+                                 ->select('1')
+                                 ->where('object_id', array($object_id, $parent_id))
+                                 ->fetchAll();
+        if (count($check) != 2)
+            return false;
+
+        $bindQuery = $this->fluentPDO->update(Manager::META_OBJECT_TABLE)
+                                     ->set(array('parent_id' => $parent_id))
+                                     ->where('object_id', $object_id)
+                                     ->execute();
+        return $bindQuery != false;
+    }
+
 
     /* Object transformation section */
 
@@ -329,6 +399,10 @@ class Manager {
             $refProperty->setAccessible(true);
             $refProperty->setValue($obj, $value);
         }
+
+        /* Cache it! */
+        $this->cacheObject($obj, $attributes['_object_id']);
+
         return $obj;
     }
 
@@ -464,5 +538,59 @@ class Manager {
             'object_type_id'    =>  $query[0]['object_type_id'],
             'attributes'        =>  $attr_ids
         );
+    }
+
+    /**
+     * Checks if object caching is turned on
+     * @return bool true, if yes, other
+     */
+    public function isObjectCaching() {
+        return $this->cachingEnabled;
+    }
+
+    /**
+     * Enables object caching
+     */
+    public function enableCache() {
+        $this->cachingEnabled = true;
+    }
+
+    /**
+     * Disables object caching
+     */
+    public function disableCache() {
+        $this->cachingEnabled = true;
+    }
+
+    /**
+     * Caching object with md5 tag with respect of inner $cachingEnabled switch
+     * @param Entity $object object, to cache
+     * @param int $object_id an id of the object
+     * @return bool true, if caching successful or disabled at all(!)
+     * @see readObject()
+     * @see $cachingEnabled
+     * @throws \InvalidArgumentException
+     */
+    private function cacheObject($object, $object_id) {
+        if (!is_object($object) || !is_int($object_id))
+            throw new \InvalidArgumentException('$object is not an object or $object_id is not int!');
+
+        if (!$this->isObjectCaching())
+            return true;
+        return $this->cache->save($object_id, serialize($object));
+    }
+
+    /**
+     * Returns Entity from cache
+     * @param int $object_id an id of the object
+     * @return null|Entity a cached object
+     * @throws \InvalidArgumentException
+     */
+    private function loadObjectFromCache($object_id) {
+        if (!is_int($object_id))
+            throw new \InvalidArgumentException('$object_id is not int!');
+        if (!$this->isObjectCaching())
+            return null;
+        return unserialize($this->cache->load($object_id));
     }
 }

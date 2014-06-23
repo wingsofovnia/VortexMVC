@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS vf_objectTypes (
 
 DROP TABLE IF EXISTS vf_params;
 CREATE TABLE IF NOT EXISTS vf_params (
-  id int(11) NOT NULL AUTO_INCREMENT,
+  param_id int(11) NOT NULL AUTO_INCREMENT,
   object_id int(11) NOT NULL,
   attr_id int(11) NOT NULL,
   int_value int(11) DEFAULT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS vf_params (
   text_value varchar(50) DEFAULT NULL,
   array_value varchar(512) DEFAULT NULL,
   reference_value int(11) DEFAULT NULL,
-  PRIMARY KEY (id),
+  PRIMARY KEY (param_id),
   KEY r_6 (object_id),
   KEY r_7 (attr_id)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
@@ -62,7 +62,7 @@ CREATE TRIGGER vf_update_checksum AFTER INSERT ON vf_params
    SET @last_param_id = LAST_INSERT_ID();
    SET @object_id = (SELECT p.object_id
                                 FROM vf_params as p
-                            WHERE p.id = @last_param_id
+                            WHERE p.param_id = @last_param_id
                             LIMIT 1);
 
    SET @object_type = (SELECT ot.name

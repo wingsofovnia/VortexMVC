@@ -7,16 +7,12 @@
  */
 
 namespace Vortex\Cache\Drivers;
+use Vortex\Cache\Cache;
 
-interface CacheBackend {
+interface CacheBackend extends Cache {
     const DEFAULT_LIFE_TIME = 300;
     const DEFAULT_NAMEPSACE = 'vf';
 
     function check();
     function config($options);
-
-    function save($id, $data = null, $time = null);
-    function load($id);
-    function delete($id);
-    function clean();
 }

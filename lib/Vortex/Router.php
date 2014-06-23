@@ -141,7 +141,7 @@ class Router {
      */
     private function parseRoutes() {
         /* Init cache object */
-        $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array(
+        $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
             'namespace' => 'vf_router',
             'lifetime'  => Cache::UNLIMITED_LIFE_TIME
         ));

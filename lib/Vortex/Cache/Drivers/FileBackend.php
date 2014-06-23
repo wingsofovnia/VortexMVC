@@ -61,7 +61,7 @@ class FileBackend implements CacheBackend {
 
     public function load($id) {
         if (!$this->enabled)
-            return false;
+            return null;
         $path = $this->getPath($id);
         Logger::debug('Check ' . $path);
         if (!file_exists($path))

@@ -26,7 +26,7 @@ abstract class CacheFactory {
      * @return Cache configured cache object
      * @throws \Vortex\Exceptions\CacheException if error occupied
      */
-    public static function getFactory($driver, $options = array()) {
+    public static function build($driver, $options = array()) {
         $driver = 'Vortex\Cache\Drivers\\' . $driver;
 
         if (!class_exists($driver))
@@ -55,6 +55,19 @@ abstract class CacheFactory {
         $cacheObject->check();
 
         return $cacheObject;
+    }
+
+    /**
+     * Constructs a cache object based on specific adapter and it's options
+     * @param string $driver driver name (use const of this class)
+     * @param array $options options
+     * @return Cache configured cache object
+     * @throws \Vortex\Exceptions\CacheException if error occupied
+     *
+     * @deprecated
+     */
+    public static function getFactory($driver, $options = array()) {
+        self::build($driver, $options);
     }
 }
 
