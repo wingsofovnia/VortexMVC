@@ -1,6 +1,6 @@
 # VortexMVC
 
-Tiny PHP MVC Framework made for myself
+Tiny PHP MVC Framework made for myself with blackjack and metamodel DAO!
 
 ## How to use?
 
