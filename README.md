@@ -1,6 +1,6 @@
 # VortexMVC
 
-Tiny PHP MVC Framework made for myself
+Tiny PHP MVC Framework made for myself with blackjack and metamodel DAO!
 
 ## How to use?
 
@@ -19,9 +19,6 @@ Controller supports actions. Every controller must have at least one:
 ```php
 public indexAction();
 ```
-All actions should ends with 'Action' (case!)
-One of the VortexMVC action's features is a 'action - friend', that respects `X_REQUESTED_WITH` header (AJAX).
-If the client sends data with such header on, for example, `http://yourweb.com/index/login/` url, that front controller try to execute not `indexAction`, but `indexAyncAction`, if it exists. Otherwise, regular `indexAction` will be called.
 
 #### View
 
@@ -64,7 +61,7 @@ Firstly, choose `Driver` that your need. For example, if your need caching in fi
 OK, lets use factory to setup cache object:
 ```php
 use Vortex\Cache\CacheFactory;
-$cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array('namespace' => 'vConfig'));
+$cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array('namespace' => 'vConfig'));
 ```
 factory method takes 2 params: `Driver` name, and `Options` array, that contains settings for that driver.
 All `Drivers` are defined in CacheFactory as a `const`s, and `Options` array is specific for particular driver. But all driver options has __at least 2 params__:
