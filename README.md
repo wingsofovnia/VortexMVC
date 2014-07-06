@@ -28,9 +28,11 @@ Each controller's action can be customized with some annotations. As of 1.0 vers
 */
 public awesomeAction();
 ```
-`@RequestMapping` says `FrontController` to bind path '/customMapping' to `awesomeAction`.
-`@Redirect` means, that any request to `awesomeAction` should be redirected to `error` controller, and it's `index` action.
-`@PermissionLevels' sets allowed userlevels for `awesomeAction`, where `0 - Admin level`, and `-1 - Guest`.
+ * `@RequestMapping` says `FrontController` to bind path __/customMapping__ to `awesomeAction`.
+
+ * `@Redirect` means, that any request to `awesomeAction` should be redirected to __error__ controller, and it's __index__ action.
+
+ * `@PermissionLevels' sets allowed userlevels for `awesomeAction`, where __0 - Admin level__, and __-1 - Guest__.
 
 #### View
 
@@ -55,8 +57,10 @@ in `views/%view_file_name%.tpl` you can echo you this way:
 ```
 That's all! See `IndexController` for example.
 
-Framework also has a simple __Layout system__:
+Framework also has a simple __Layout system__
+
 Layouts are a backbone for all your views. They allows to copy less repetitive view elements.
+
 They are placed in `views/layouts` folder, and must be decelerated in `application.ini` with `view.layout.templates` param. See config file for more details.  
 
 Here is a typical layout:
@@ -67,8 +71,8 @@ Here is a typical layout:
 </section>
 ```
 It looks like a regular view template, but it has some distinctions. Lets find out what it does:
-`$this->partial('layouts/header')` includes another layout `layouts/header.tpl` and places it's content into this layout. Let `header` layout has `<h1>Hello</h1>` text.
-`<?= $this->content() ?>` is a placeholder for any other regular view. In other words, when you render any view in controller, using this example layout, it's content will be placed here.
+ * `$this->partial('layouts/header')` includes another layout `layouts/header.tpl` and places it's content into this layout. Let `header` layout has `<h1>Hello</h1>` text.
+ * `<?= $this->content() ?>` is a placeholder for any other regular view. In other words, when you render any view in controller, using this example layout, it's content will be placed here.
 
 As a result of using this layout and the view of our example `awesomeAction` rendered view will look like:
 ```html
