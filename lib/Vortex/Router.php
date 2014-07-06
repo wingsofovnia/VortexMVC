@@ -30,6 +30,7 @@ class Router {
 
     private $controller;
     private $action;
+    private $permissions;
     private $params;
 
 
@@ -43,6 +44,8 @@ class Router {
 
         $this->controller = Config::getInstance()->controller->default;
         $this->action = Config::getInstance()->action->default;
+        $this->permissions = array();
+
         $this->params = array();
     }
 
@@ -82,6 +85,14 @@ class Router {
     }
 
     /**
+     * Returns an array of permission level for this action
+     * @return array array of int levels
+     */
+    public function getPermissions() {
+        return $this->permissions;
+    }
+
+    /**
      * Gets params, parsed from url
      * @return array params
      */
@@ -94,7 +105,7 @@ class Router {
      */
     public function parse() {
         /* Reading for predefined routes and redirects from annotations */
-        $this->parseRoutes();
+        $this->parseAnnotations();
 
         /* First, looking if some action requested mapping for this url */
         $predefined = false;
@@ -127,19 +138,23 @@ class Router {
             Logger::debug('Parsed route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
         }
 
-        /* In the end, our identified action can have @Redirect annotation. Checking this.. */
+        /* Our identified action can have @Redirect annotation. Checking this.. */
         if (isset($this->routes['redirect'][$this->controller][$this->action])) {
             $ctrl = $this->controller;
             $this->controller = $this->routes['redirect'][$ctrl][$this->action]['controller'];
             $this->action = $this->routes['redirect'][$ctrl][$this->action]['action'];
             Logger::debug('Redirected to = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
         }
+
+        /* Retrieving permissions from annotations */
+        if (isset($this->routes['permissions'][$this->controller][$this->action]))
+            $this->permissions = $this->routes['permissions'][$this->controller][$this->action];
     }
 
     /**
      * Parses routes form controller's annotations
      */
-    private function parseRoutes() {
+    private function parseAnnotations() {
         /* Init cache object */
         $cache = CacheFactory::getFactory(CacheFactory::FILE_DRIVER, array(
             'namespace' => 'vf_router',
@@ -159,14 +174,20 @@ class Router {
         $classNamespace = 'Application\Controllers\\';
         $annotations = Annotation::getAllClassFilesAnnotations($dir, $filter, $classNamespace);
 
-        /* Retrieving Annotation::REQUEST_MAPPING and Annotation::REDIRECT data */
-        $routes = array('mapping' => array(), 'redirect' => array());
+        /* Retrieving Annotation::REQUEST_MAPPING, Annotation::REDIRECT and Annotation::PERMISSIONS data */
+        $routes = array('mapping' => array(), 'redirect' => array(), 'permissions' => array());
         foreach ($annotations as $className => $data) {
             $controller = str_replace('Controller', '', $className);
+            $controller = strtolower($controller);
+
             foreach ($data['methods'] as $methodName => $methodAnnotations) {
                 if (!Text::endsWith($methodName, 'Action'))
                     continue;
                 $action = str_replace('Action', '', $methodName);
+
+                if (isset($methodAnnotations[Annotation::PERMISSIONS])) {
+                    $routes['permissions'][$controller][$action] = $methodAnnotations[Annotation::PERMISSIONS];
+                }
 
                 if (isset($methodAnnotations[Annotation::REDIRECT])) {
                     $routes['redirect'][$controller][$action] = array(
@@ -192,6 +213,7 @@ class Router {
             }
         }
 
+        Logger::debug($routes);
         /* Caching */
         $cache->save('annotations', $routes);
         $this->routes = $routes;
@@ -205,7 +227,7 @@ class Router {
         if (!$args)
             return;
 
-        $this->controller = ucfirst($args[0]);
+        $this->controller = $args[0];
         if (isset($args[1]))
             $this->action = $args[1];
 

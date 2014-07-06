@@ -15,7 +15,7 @@ class IndexController extends Controller {
     /**
      * @RequestMapping('/customMapping', 'GET');
      * @Redirect('index', 'index');
-     * @Permission('admin','logger');
+     * @PermissionLevels('-1');
      */
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
@@ -27,7 +27,7 @@ class IndexController extends Controller {
     /**
      * @RequestMapping('/customMapping', 'POST');
      * @Redirect('index', 'index');
-     * @Permission('admin','logger');
+     * @PermissionLevels('0','1');
      */
     public function indexPOSTAction() {
         $view = new View('index');

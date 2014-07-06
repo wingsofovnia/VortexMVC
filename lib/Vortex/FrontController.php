@@ -27,15 +27,18 @@ class FrontController {
      */
     public function run() {
         ob_start();
+
         try {
-            $this->runAction($this->request->getController(), $this->request->getAction());
+            $this->redirect($this->request->getController(), $this->request->getAction());
         } catch (FrontException $e) {
             if (!Config::isProduction())
                 throw $e;
             try {
-                $this->response->redirect('/' . $this->config->controller->error . '/' . $this->config->action->error
-                    . '/from/' . urlencode($this->request->getRequestUrl()));
-                //$this->runAction($this->config->controller->error, $this->config->action->error);
+                $this->request->addParam("exception", $e);
+                $this->request->addParam('code', $e->getCode());
+                $this->request->addParam('message', $e->getMessage());
+
+                $this->redirect($this->config->controller->error, $this->config->action->error);
             } catch (FrontException $e) {
                 throw $e;
             }
@@ -49,19 +52,27 @@ class FrontController {
      * Runs an action of controller
      * @param string $controller name of controller
      * @param string $action name of action
-     * @throws FrontException if controller or action doesn't exists
+     * @throws FrontException if controller or action doesn't exists, or permission denied
      */
-    private function runAction($controller, $action) {
+    private function redirect($controller, $action) {
         $controller .= 'Controller';
         $action .= 'Action';
 
         $controller = 'Application\Controllers\\' . $controller;
         if (!class_exists($controller))
-            throw new FrontException('Controller #' . $controller . '# does\'t exists!');
+            throw new FrontException('Controller #{' . $controller . '} does\'t exists!');
         $controller = new $controller($this->request, $this->response);
 
         if (is_callable(array($controller, $action)) == false)
-            throw new FrontException('Action #' . $action . '# does\'t exists!');
+            throw new FrontException('Action #{' . $action . '} does\'t exists!');
+
+        $actionPermissions = $this->request->getPermissions();
+        $userPermissionLevel = Auth::getUserLevel();
+        Logger::debug($userPermissionLevel);
+        Logger::debug($actionPermissions);
+        if (count($actionPermissions) > 0 && !in_array($userPermissionLevel, $actionPermissions))
+            throw new FrontException('No permission for Controller#{' . get_class($controller) . '}, Action#{' . $action . '}!');
+
         $controller->$action();
     }
 }

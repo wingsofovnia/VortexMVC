@@ -14,6 +14,7 @@ use Vortex\Exceptions\SessionException;
  */
 class Session {
     const GLOBAL_SCOPE = 0;
+    const NAMESPACE_PREFIX = '__';
 
     private static $isStarted = false;
     private $namespace;
@@ -24,7 +25,7 @@ class Session {
      * Starts a session
      * @throws SessionException if headers have been already sent
      */
-    public static function start() {
+    private static function start() {
         if (self::isStarted())
             return;
         if (headers_sent())
@@ -34,9 +35,9 @@ class Session {
     }
 
     /**
-     * Destroys session and it's data
+     * Destroys all sessions and it's data
      */
-    public static function destroy() {
+    public static function destroyAll() {
         $_SESSION = array();
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -47,6 +48,24 @@ class Session {
         }
         session_destroy();
         self::$isStarted = false;
+    }
+
+    /**
+     * Destroys all values from session, with current namespace
+     * WARNING! If isGlobalNamespace() === true, than ALL values, from ALL namespaces will be destroyed!
+     * @return bool false, if no values were set, otherwise - true;
+     */
+    public function destroy() {
+        if ($this->isGlobalNamespace())
+            self::destroyAll();
+
+        $namespace = self::NAMESPACE_PREFIX . $this->namespace;
+
+        if (!isset($_SESSION[$namespace]))
+            return false;
+
+        unset($_SESSION[$namespace]);
+        return true;
     }
 
     /**
@@ -108,19 +127,40 @@ class Session {
     }
 
     /**
-     * Writes data into Session
+     * Writes key-value pair or array values into Session
+     * @param string|array $key a key for key-value pair, or ASSOC array
+     * @param mixed $value a value
+     * @throws \InvalidArgumentException
+     */
+    public function set($key, $value = null) {
+        if (empty($key))
+            throw new \InvalidArgumentException('Param $key must be not empty value!');
+
+        if (!self::isstarted())
+            self::start();
+
+        if (!$this->isGlobalNamespace()) {
+            $namespace = self::NAMESPACE_PREFIX . $this->namespace;
+            $session = $_SESSION[$namespace];
+        } else {
+            $session = $_SESSION;
+        }
+
+        if ((bool)count(array_filter(array_keys($key), 'is_string')) == true) {
+            foreach ($key as $k => $v)
+                $session[$k] = $v;
+        } else {
+            $session[$key] = $value;
+        }
+    }
+
+    /**
+     * Magic alias for $this->set(k, v);
      * @param string $key a key
      * @param mixed $value a value
      */
     public function __set($key, $value) {
-        if (!self::isStarted())
-            self::start();
-        if ($this->isGlobalNamespace()) {
-            $namespace = '__' . $this->namespace;
-            $_SESSION[$namespace][$key] = $value;
-        } else {
-            $_SESSION[$key] = $value;
-        }
+        $this->set($key, $value);
     }
 
     /**
@@ -128,9 +168,10 @@ class Session {
      * @param string $key a key
      * @return mixed a value
      */
-    public function __get($key) {
-        if ($this->isGlobalNamespace()) {
-            $session = &$_SESSION['__' . $this->namespace];
+    public function get($key) {
+        if (!$this->isGlobalNamespace()) {
+            $namespace = self::NAMESPACE_PREFIX . $this->namespace;
+            $session = &$_SESSION[$namespace];
         } else {
             $session = &$_SESSION;
         }
@@ -143,5 +184,14 @@ class Session {
         }
 
         return null;
+    }
+
+    /**
+     * Magic alias of $this->get(k);
+     * @param string $key a key
+     * @return mixed a value
+     */
+    public function __get($key) {
+        return $this->get($key);
     }
 } 

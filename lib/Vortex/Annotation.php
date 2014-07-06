@@ -19,8 +19,7 @@ class Annotation {
     /* Predefined annotations */
     const REQUEST_MAPPING = 'RequestMapping';
     const REDIRECT = 'Redirect';
-    const ALLOW = 'Allow';
-    const DENY = 'Deny';
+    const PERMISSIONS = 'PermissionLevels';
 
 
 	/**

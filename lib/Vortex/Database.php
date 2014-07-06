@@ -25,7 +25,6 @@ class Connection {
     private $password;
     private $db;
     private $connection;
-    private $dao;
 
     /**
      * Init constructor. Reads values from Vortex_Config
@@ -57,7 +56,6 @@ class Connection {
                 Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
 
-        $this->dao = new Manager($this->connection);
         Logger::debug("Connected to database!");
     }
 
@@ -72,16 +70,5 @@ class Connection {
             self::$_instance = new self();
         }
         return self::$_instance->connection;
-    }
-
-    /**
-     * Gets a DAO object
-     * @return Manager instance
-     */
-    public static function getDAO() {
-        if (is_null(self::$_instance)) {
-            self::$_instance = new self();
-        }
-        return self::$_instance->dao;
     }
 }

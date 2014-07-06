@@ -101,7 +101,7 @@ class Request {
      * @return string a PARAM value
      */
     public function getParam($key, $default = null) {
-        return !is_null($this->params->$key) ? $this->params[$key] : $default;
+        return !is_null($this->params->$key) ? $this->params->$key : $default;
     }
 
     /**
@@ -203,5 +203,13 @@ class Request {
      */
     public function getAction() {
         return $this->router->getAction();
+    }
+
+    /**
+     * Returns an array of permission level for this action
+     * @return array array of int levels
+     */
+    public function getPermissions() {
+        return $this->router->getPermissions();
     }
 }
