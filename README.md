@@ -1,6 +1,6 @@
 # VortexMVC
 
-Tiny PHP MVC Framework made for myself with blackjack and metamodel DAO!
+Tiny PHP MVC Framework made for myself to be fast and lite!
 
 ## How to use?
 
@@ -19,33 +19,71 @@ Controller supports actions. Every controller must have at least one:
 ```php
 public indexAction();
 ```
+Each controller's action can be customized with some annotations. As of 1.0 version, `vf` supports only 3 annotations:
+```
+/**
+* @RequestMapping('/customMapping', 'METHOD');
+* @Redirect('error', 'index');
+* @PermissionLevels('-1', '0');
+*/
+public awesomeAction();
+```
+`@RequestMapping` says `FrontController` to bind path '/customMapping' to `awesomeAction`.
+`@Redirect` means, that any request to `awesomeAction` should be redirected to `error` controller, and it's `index` action.
+`@PermissionLevels' sets allowed userlevels for `awesomeAction`, where `0 - Admin level`, and `-1 - Guest`.
 
 #### View
 
 Very simple. Just create the View obj:
 ```php
 use Vortex\View;
-$view = new View(%view_file_name%);
+public function awesomeAction() {
+   $view = new View(%view_file_name%);
+}
 ```
 than add data:
 ```php
-$view->data->yourvarname = 'HELLO WORD!';
+$view->data->yourvarname = 'WORLD!';
 ```
 and render it:
 ```php
 $view->render();
 ```
-That's all! See IndexController for example.
+in `views/%view_file_name%.tpl` you can echo you this way:
+```php
+<?=$this->data->yourvarname?>
+```
+That's all! See `IndexController` for example.
 
 Framework also has a simple __Layout system__:
-You should config it in application.ini file. Explore `application/views/layouts/*`, `Vortex\View` for more info =P
+Layouts are a backbone for all your views. They allows to copy less repetitive view elements.
+They are placed in `views/layouts` folder, and must be decelerated in `application.ini` with `view.layout.templates` param. See config file for more details.  
+
+Here is a typical layout:
+```php
+<?= $this->partial('layouts/header') ?>
+<section>
+    <?= $this->content() ?>
+</section>
+```
+It looks like a regular view template, but it has some distinctions. Lets find out what it does:
+`$this->partial('layouts/header')` includes another layout `layouts/header.tpl` and places it's content into this layout. Let `header` layout has `<h1>Hello</h1>` text.
+`<?= $this->content() ?>` is a placeholder for any other regular view. In other words, when you render any view in controller, using this example layout, it's content will be placed here.
+
+As a result of using this layout and the view of our example `awesomeAction` rendered view will look like:
+```html
+<h1>Hello</h1>
+<section>
+    WORLD!
+</section>
+```
 
 #### DB connection
 
-If you need a DB connection, just take it from Vortex\Connection!
+If you need a DB connection, just take it from Vortex\Database!
 ```php
-use Vortex\Connection;
-$db = Connection::getConnection();
+use Vortex\Database;
+$db = Database::getConnection();
 ```
 Than you can use it. Here it is an example:
 ```php
@@ -80,8 +118,19 @@ $mydata = $cache->load('mydata#05');
 
 Check PHPDoc's of `Vortex\Cache\Cache` for more information.
 
+#### Something else?
+VortexMVC has many other classes that I don't mention here. Here the list some of them:
+ * `Vortex\Annotation` - class, that can parse any annotation for any class/method
+ * `Vortex\Registry` - a simple registry implementation
+ * `Vortex\GlobalRegistry` - the same with `Vortex\Registry` but made as a singleton with global scope
+ * `Vortex\Logger` - a simple logger, made in the best tradition of log4j
+ * `Vortex\Request` and `Vortex\Response` - the HTTP Request/Response wrappers, with many convenient methods
+ * `Vortex\Session` - a PHP Sessions wrapper, with namespace support
+ * `Vortex\Router` - simple router class, with annotation support
+Feel free to look into it's code and read PHPDoc. They are written simple as much as possible to be lite and easy to understand.
+
 #### Credits
-VortexMVC uses such work of other developers:
+VortexMVC uses some work of other developers:
 * __FluentPDO__ :: https://github.com/lichtner/fluentpdo
 * __IniParser__ :: https://github.com/austinhyde/IniParser
 * __SplClassLoader__ :: https://gist.github.com/jwage/221634
