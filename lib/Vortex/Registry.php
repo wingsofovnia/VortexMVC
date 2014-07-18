@@ -8,8 +8,8 @@
 namespace Vortex;
 
 /**
- * Class Vortex_Registry
- * This class is a simple Registry (key-value storage) implementation
+ * Class Vortex_Registry is a simple Registry (key-value storage) implementation
+ * @package Vortex
  */
 class Registry {
     protected $vars;
@@ -40,7 +40,7 @@ class Registry {
      * @return mixed actually, value
      */
     public function __get($index) {
-        $index = (string) $index;
+        $index = (string)$index;
         return isset($this->vars[$index]) ? $this->vars[$index] : null;
     }
 

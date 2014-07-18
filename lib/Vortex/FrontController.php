@@ -8,20 +8,23 @@
  */
 
 namespace Vortex;
+
 use Vortex\Exceptions\FrontException;
+use Vortex\MVC\View;
+use Vortex\View\Layout;
 
 class FrontController {
-	private $config;
-	private $request;
-	private $response;
-	
-	public function __construct() {
-        $this->request  = new Request();
+    private $config;
+    private $request;
+    private $response;
+
+    public function __construct() {
+        $this->request = new Request();
         $this->response = new Response();
         $this->config = Config::getInstance();
-	}
+    }
 
-	/**
+    /**
      * Run the application
      * @throws FrontException if controller doesn't exists (and PRODUCTION state = 0)
      */
@@ -48,31 +51,40 @@ class FrontController {
         $this->response->sendPacket();
     }
 
-	/**
+    /**
      * Runs an action of controller
      * @param string $controller name of controller
      * @param string $action name of action
      * @throws FrontException if controller or action doesn't exists, or permission denied
      */
     private function redirect($controller, $action) {
-        $controller .= 'Controller';
-        $action .= 'Action';
+        $_controller = $controller . 'Controller';
+        $_action = $action . 'Action';
 
-        $controller = 'Application\Controllers\\' . $controller;
-        if (!class_exists($controller))
-            throw new FrontException('Controller #{' . $controller . '} does\'t exists!');
-        $controller = new $controller($this->request, $this->response);
+        $_controller = 'Application\Controllers\\' . $_controller;
+        if (!class_exists($_controller))
+            throw new FrontException('Controller #{' . $_controller . '} does\'t exists!');
 
-        if (is_callable(array($controller, $action)) == false)
-            throw new FrontException('Action #{' . $action . '} does\'t exists!');
+        /** @var $_controller \Vortex\MVC\Controller */
+        $_controller = new $_controller($this->request, $this->response);
+
+        if (is_callable(array($_controller, $_action)) == false)
+            throw new FrontException('Action #{' . $_action . '} does\'t exists!');
 
         $actionPermissions = $this->request->getPermissions();
         $userPermissionLevel = Auth::getUserLevel();
         Logger::debug($userPermissionLevel);
         Logger::debug($actionPermissions);
         if (count($actionPermissions) > 0 && !in_array($userPermissionLevel, $actionPermissions))
-            throw new FrontException('No permission for Controller#{' . get_class($controller) . '}, Action#{' . $action . '}!');
+            throw new FrontException('No permission for Controller#{' . get_class($_controller) . '}, Action#{' . $_action . '}!');
 
-        $controller->$action();
+        $_controller->setView(View::factory($controller . '/' . $action));
+        $_controller->$_action();
+
+        if ($_controller == null)
+            return;
+
+        $layout = new Layout($_controller->getView());
+        echo $layout->render();
     }
 }

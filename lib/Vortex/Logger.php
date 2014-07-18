@@ -8,8 +8,8 @@
 namespace Vortex;
 
 /**
- * Class Vortex_Logger
- * A simple logger implementation
+ * Class Vortex_Logger is a simple logger implementation
+ * @package Vortex
  */
 class Logger {
     const EXCEPTION = -1;

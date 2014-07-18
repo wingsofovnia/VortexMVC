@@ -13,20 +13,39 @@ abstract class Service {
         if (!is_callable($function))
             throw new \InvalidArgumentException('U should place a callable funct to calc it\'s exec time!');
         $mtime = microtime();
-        $mtime = explode(" ",$mtime);
+        $mtime = explode(" ", $mtime);
         $mtime = $mtime[1] + $mtime[0];
         $starttime = $mtime;
 
         $function();
 
         $mtime = microtime();
-        $mtime = explode(" ",$mtime);
+        $mtime = explode(" ", $mtime);
         $mtime = $mtime[1] + $mtime[0];
         $endtime = $mtime;
         $totaltime = ($endtime - $starttime);
 
         if ($echo !== true)
             return $totaltime;
-        echo "Execution time: ".$totaltime." seconds";
+        echo "Execution time: " . $totaltime . " seconds";
+    }
+
+    public static function fileExists($fileName, $caseSensitive = true) {
+        if (file_exists($fileName)) {
+            return $fileName;
+        }
+
+        if ($caseSensitive)
+            return false;
+
+        $directoryName = dirname($fileName);
+        $fileArray = glob($directoryName . '/*', GLOB_NOSORT);
+        $fileNameLowerCase = strtolower($fileName);
+        foreach ($fileArray as $file) {
+            if (strtolower($file) == $fileNameLowerCase) {
+                return $file;
+            }
+        }
+        return false;
     }
 } 

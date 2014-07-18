@@ -3,11 +3,14 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 29-May-14
- * Time: 15:41
  */
 
 namespace Vortex;
 
+/**
+ * Class Auth used to authenticate user and determine its permissions
+ * @package Vortex
+ */
 class Auth {
     const GUEST_LEVEL = -1;
     const ADMIN_LEVEL = 0;
@@ -44,7 +47,7 @@ class Auth {
      */
     public static function init() {
         self::$connection = Database\Connection::getConnection();
-        self::setHashAlgorithm(function($credential) {
+        self::setHashAlgorithm(function ($credential) {
             return md5($credential);
         });
         self::$session = new Session(self::SESSION_NAMESPACE);
@@ -63,7 +66,7 @@ class Auth {
 
         $user = self::identify($identity);
         Logger::debug($user);
-        
+
         if (!$user || $user[self::$credentialColumn] != self::hashify($credential))
             return false;
 
@@ -83,8 +86,8 @@ class Auth {
             throw new \InvalidArgumentException('$identity cant be empty string!');
 
         $userData = self::$connection->from(self::$table)
-                                     ->where(self::$identityColumn, $identity)
-                                     ->fetch();
+            ->where(self::$identityColumn, $identity)
+            ->fetch();
 
         return $userData;
     }
@@ -110,9 +113,9 @@ class Auth {
             return false;
 
         $user_data = array(
-            self::$identityColumn       =>  $identity,
-            self::$credentialColumn     =>  self::hashify((string)$credential),
-            self::$permissionLevelColumn =>  (int)$level
+            self::$identityColumn => $identity,
+            self::$credentialColumn => self::hashify((string)$credential),
+            self::$permissionLevelColumn => (int)$level
         );
 
         if (is_array($additions))
@@ -148,8 +151,8 @@ class Auth {
      */
     public static function deleteUser($identity) {
         return (bool)self::$connection->deleteFrom(self::$table)
-                                      ->where(self::$identityColumn, $identity)
-                                      ->execute();
+            ->where(self::$identityColumn, $identity)
+            ->execute();
     }
 
     /**

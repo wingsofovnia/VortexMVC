@@ -10,6 +10,7 @@ namespace Vortex;
 /**
  * Class Global
  * An implementation of Registry as a singleton in a global scope
+ * @package Vortex
  */
 class GlobalRegistry {
     private $registry;
@@ -22,7 +23,8 @@ class GlobalRegistry {
         $this->registry = new Registry();
     }
 
-    protected function __clone() { }
+    protected function __clone() {
+    }
 
     /**
      * Instance getter

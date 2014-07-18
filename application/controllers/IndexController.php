@@ -3,15 +3,14 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 20:34
  */
 
 namespace Application\Controllers;
-use Vortex\Controller;
-use Vortex\View;
+
+use Vortex\MVC\Controller;
+use Vortex\MVC\View;
 
 class IndexController extends Controller {
-
     /**
      * @RequestMapping('/customMapping', 'GET');
      * @Redirect('index', 'index');
@@ -19,9 +18,7 @@ class IndexController extends Controller {
      */
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
-        $view = new View('index');
-        $view->data->firstWords = 'Hello World! It\'s a indexAction!';
-        $view->render();
+        $this->view->data->firstWords = 'Hello World! It\'s a indexAction!';
     }
 
     /**
@@ -30,8 +27,7 @@ class IndexController extends Controller {
      * @PermissionLevels('0','1');
      */
     public function indexPOSTAction() {
-        $view = new View('index');
+        $view = new View('index\index');
         $view->data->firstWords = 'Hello World!  It\'s a indexPOSTAction!';
-        $view->render();
     }
 }

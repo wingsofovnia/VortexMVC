@@ -3,16 +3,17 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 20:22
+ *
  */
 
 namespace Vortex;
+
 use Vortex\Exceptions\ResponseException;
 
 /**
- * Class Vortex_Response
- * This class implements a wrapper of HTTP Response PACKET with addition
+ * Class Vortex_Response implements a wrapper of HTTP Response PACKET with additional,
  * extended functionality
+ * @package Vortex
  */
 class Response {
     /* Status codes */
@@ -82,7 +83,7 @@ class Response {
         // Redirection 3xx
         300 => 'Multiple Choices',
         301 => 'Moved Permanently',
-        302 => 'Found',  // 1.1
+        302 => 'Found', // 1.1
         303 => 'See Other',
         304 => 'Not Modified',
         305 => 'Use Proxy',
@@ -206,7 +207,7 @@ class Response {
      * Prepares headers and sends a packet's body
      */
     public function sendPacket() {
-         /***************************
+        /***************************
          *          PACKET          *
          ****************************
          * HTTP/1.1 200 OK          *   // Status line

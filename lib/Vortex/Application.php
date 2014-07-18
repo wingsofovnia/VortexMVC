@@ -3,8 +3,6 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- *
- * @package Vortex
  */
 
 namespace Vortex;
@@ -14,6 +12,7 @@ namespace Vortex;
  * This one is an engine and class loader and configurator.
  * Class controls an output, ask @see Vortex_Router for path and
  * starts particular controller's action.
+ * @package Vortex
  */
 class Application {
 
@@ -46,10 +45,10 @@ class Application {
      * Registers error handlers
      */
     private static function registerHandlers() {
-        set_exception_handler(function($e) {
-           Logger::exception((string)$e);
+        set_exception_handler(function ($e) {
+            Logger::exception((string)$e);
         });
-        set_error_handler(function($code, $message, $file, $line) {
+        set_error_handler(function ($code, $message, $file, $line) {
             Logger::error($message . "\n" . $file . ' at line ' . $line);
         });
     }

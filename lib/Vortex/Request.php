@@ -3,15 +3,14 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- * Time: 18:02
  */
 
 namespace Vortex;
 
 /**
- * Class Vortex_Request
- * This class implements a wrapper of HTTP Request with addition
+ * Class Vortex_Request implements a wrapper of HTTP Request with additional,
  * extended functionality
+ * @package Vortex
  */
 class Request {
     private $get;

@@ -6,6 +6,7 @@
  */
 
 namespace Vortex\Database;
+
 use Vortex\Config;
 use Vortex\Database\DAO\Manager;
 use Vortex\Logger;
@@ -15,6 +16,7 @@ use Vortex\Logger;
  * This class establishes connection to database
  * using PDO and wraps it with FluentPDO
  * @link https://github.com/lichtner/fluentpdo
+ * @package Vortex
  */
 class Connection {
     private static $_instance = null;
@@ -52,14 +54,15 @@ class Connection {
         $this->connection = new \FluentPDO($pdo);
 
         if (!Config::isProduction())
-            $this->connection->debug = function($BaseQuery) {
+            $this->connection->debug = function ($BaseQuery) {
                 Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
 
         Logger::debug("Connected to database!");
     }
 
-    protected function __clone() { }
+    protected function __clone() {
+    }
 
     /**
      * Gets a FluentPDO connection

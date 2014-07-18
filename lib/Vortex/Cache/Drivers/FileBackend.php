@@ -3,7 +3,6 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 11-Jun-14
- * Time: 20:36
  */
 
 namespace Vortex\Cache\Drivers;
@@ -12,6 +11,10 @@ use Vortex\Cache\Cache;
 use Vortex\Exceptions\CacheException;
 use Vortex\Logger;
 
+/**
+ * Class implements a File caching Adapter
+ * @package Vortex\Cache\Drivers
+ */
 class FileBackend implements CacheBackend {
     private $namespace;
     private $defaultLifetime;
@@ -39,7 +42,7 @@ class FileBackend implements CacheBackend {
         $this->namespace = $options['namespace'];
         $this->enabled = $options['masterSwitch'];
         Logger::info('FileBackend = {"path" => ' . $this->path . '", "cacheExtension" => ' . $this->cacheExtension .
-        ', "defaultLifetime" => ' . $this->defaultLifetime . ', "namespace" => ' . $this->namespace);
+            ', "defaultLifetime" => ' . $this->defaultLifetime . ', "namespace" => ' . $this->namespace);
     }
 
     public function save($id, $data = null, $time = null) {
@@ -49,8 +52,8 @@ class FileBackend implements CacheBackend {
             $time = $this->defaultLifetime;
         $path = $this->getPath($id);
         $data = array(
-            'lifetime'  =>  $time,
-            'data'      =>  $data
+            'lifetime' => $time,
+            'data' => $data
         );
         Logger::debug('Writing to ' . $path);
         $res = file_put_contents($path, serialize($data));

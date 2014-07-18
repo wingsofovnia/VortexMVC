@@ -3,11 +3,10 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
- *
- * @package Vortex
  */
 
 namespace Vortex;
+
 use ArrayObject;
 use IniParser;
 use Vortex\Cache\Cache;
@@ -18,6 +17,7 @@ require LIB_PATH . '/Utils/IniParser.php';
 /**
  * Class Vortex_Config
  * This class parses application ini settings file into OM
+ * @package Vortex
  */
 class Config extends IniParser {
     const CACHE_NAMESPACE_TAG = 'config';
@@ -50,7 +50,7 @@ class Config extends IniParser {
         /* Caching configs... */
         $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
             'namespace' => CACHE_TAG,
-            'lifetime'  => Cache::UNLIMITED_LIFE_TIME
+            'lifetime' => Cache::UNLIMITED_LIFE_TIME
         ));
 
         $configCacheId = md5($file);
@@ -107,6 +107,7 @@ class ArrayObjectMagic extends ArrayObject {
             return $args[0];
         return new ArrayObjectMagic();
     }
+
     public function __get($name) {
         if (isset($this[$name]))
             return $this[$name];

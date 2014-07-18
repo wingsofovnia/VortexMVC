@@ -3,8 +3,6 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 15-Jun-14
- *
- * @package Vortex
  */
 
 namespace Vortex;
@@ -14,10 +12,8 @@ use Vortex\Cache\CacheFactory;
 use Vortex\Utils\Text;
 
 /**
- * Class Router
- * This class defines, what controller and it's action should be executed, based on URL string
+ * Class Router defines, what controller and it's action should be executed, based on URL string
  * and predefined routers/redirects with annotations of controller's actions
- *
  * @package Vortex
  */
 class Router {
@@ -158,7 +154,7 @@ class Router {
         /* Init cache object */
         $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
             'namespace' => 'vf_router',
-            'lifetime'  => Cache::UNLIMITED_LIFE_TIME
+            'lifetime' => Cache::UNLIMITED_LIFE_TIME
         ));
 
         /* Checking if annotations have already parsed */
@@ -169,7 +165,7 @@ class Router {
         }
 
         /* Asking for all annotations for classes and their methods in dir Controllers */
-        $dir = APPLICATION_PATH.'/controllers/';
+        $dir = APPLICATION_PATH . '/controllers/';
         $filter = '*Controller';
         $classNamespace = 'Application\Controllers\\';
         $annotations = Annotation::getAllClassFilesAnnotations($dir, $filter, $classNamespace);
@@ -191,8 +187,8 @@ class Router {
 
                 if (isset($methodAnnotations[Annotation::REDIRECT])) {
                     $routes['redirect'][$controller][$action] = array(
-                        'controller'    =>  $methodAnnotations[Annotation::REDIRECT][0],
-                        'action'        =>  $methodAnnotations[Annotation::REDIRECT][1]
+                        'controller' => $methodAnnotations[Annotation::REDIRECT][0],
+                        'action' => $methodAnnotations[Annotation::REDIRECT][1]
                     );
                 }
 
@@ -200,14 +196,14 @@ class Router {
                     if (!isset($methodAnnotations[Annotation::REQUEST_MAPPING][0]))
                         throw new \InvalidArgumentException("Bad REQUEST_MAPPING annotation");
 
-                    $pattern =  '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
+                    $pattern = '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
                     $method = isset($methodAnnotations[Annotation::REQUEST_MAPPING][1]) ?
                         $methodAnnotations[Annotation::REQUEST_MAPPING][1] : self::ROUTE_METHOD_ALL;
 
                     $routes['mapping'][$method][] = array(
-                        'pattern'       =>  $pattern,
-                        'controller'    =>  $controller,
-                        'action'        =>  $action
+                        'pattern' => $pattern,
+                        'controller' => $controller,
+                        'action' => $action
                     );
                 }
             }
@@ -277,7 +273,7 @@ class Router {
     private function cleanURL($url) {
         $url = html_entity_decode($url);
         if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
-            $url =  substr($url, strpos($url, $_SERVER['SERVER_NAME']));
+            $url = substr($url, strpos($url, $_SERVER['SERVER_NAME']));
         if (strlen($url) == 1)
             return '/';
         $url = rtrim($url, '/');

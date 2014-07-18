@@ -3,8 +3,6 @@
  * Project: VortexMVC
  * Author: Rostislav Khanyukov, Illia Ovchynnikov
  * Date: 11-Jun-14
- *
- * @package Vortex
  */
 
 namespace Vortex;
@@ -12,9 +10,11 @@ namespace Vortex;
 /**
  * Class Vortex_Annotation
  * This class implements annotations for classes and their methods
+ *
+ * @package Vortex
  */
 class Annotation {
-	const PATTERN = '/\s*\*\s*\@([a-z0-9-_]+)\((.*)\).*/i';
+    const PATTERN = '/\s*\*\s*\@([a-z0-9-_]+)\((.*)\).*/i';
 
     /* Predefined annotations */
     const REQUEST_MAPPING = 'RequestMapping';
@@ -22,15 +22,15 @@ class Annotation {
     const PERMISSIONS = 'PermissionLevels';
 
 
-	/**
+    /**
      * Gets data from doc-comment
      * @param string $className className
-	 * @return array parsed data from doc-comment
+     * @return array parsed data from doc-comment
      */
-	public static function getClassAnnotation($className) {
-		$classInfo = new \ReflectionClass($className);
-		$docComment = $classInfo->getDocComment();
-		return self::parseDocComment($docComment);
+    public static function getClassAnnotation($className) {
+        $classInfo = new \ReflectionClass($className);
+        $docComment = $classInfo->getDocComment();
+        return self::parseDocComment($docComment);
     }
 
     /**
@@ -62,14 +62,14 @@ class Annotation {
     public static function getAllClassFilesAnnotations($dir, $filter = '/*', $classNamespace = '', $suffix = '.php') {
         $annotations = array();
 
-        foreach(glob($dir . $filter . $suffix) as $file) {
+        foreach (glob($dir . $filter . $suffix) as $file) {
             $classShortName = basename($file, $suffix);
             $classFullName = $classNamespace . $classShortName;
 
             $annotations[$classShortName]['class'] = array(
-                'name'          =>  $classFullName,
-                'namespace'     =>  $classNamespace,
-                'annotation'    =>  self::getClassAnnotation($classFullName)
+                'name' => $classFullName,
+                'namespace' => $classNamespace,
+                'annotation' => self::getClassAnnotation($classFullName)
             );
 
             $annotations[$classShortName]['methods'] = self::getAllMethodsAnnotations($classFullName);

@@ -6,11 +6,12 @@
  */
 
 namespace Vortex;
+
 use Vortex\Exceptions\SessionException;
 
 /**
- * Class Vortex_Session
- * A PHP Sessions wrapper with namespaces
+ * Class Vortex_Session is a PHP Sessions wrapper with namespaces
+ * @package Vortex
  */
 class Session {
     const GLOBAL_SCOPE = 0;
@@ -171,9 +172,9 @@ class Session {
     public function get($key) {
         if (!$this->isGlobalNamespace()) {
             $namespace = self::NAMESPACE_PREFIX . $this->namespace;
-            $session = &$_SESSION[$namespace];
+            $session = & $_SESSION[$namespace];
         } else {
-            $session = &$_SESSION;
+            $session = & $_SESSION;
         }
 
         if (isset($session[$key])) {

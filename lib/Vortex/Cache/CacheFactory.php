@@ -3,7 +3,6 @@
  * Project: VortexMVC
  * Author: Ilia Ovchinnikov
  * Date: 11-Jun-14
- * Time: 22:22
  */
 
 namespace Vortex\Cache;
@@ -14,6 +13,10 @@ use Vortex\Config;
 use Vortex\Exceptions\CacheException;
 use Vortex\Logger;
 
+/**
+ * Class CacheFactory builds a cache object
+ * @package Vortex\Cache
+ */
 abstract class CacheFactory {
     const FILE_DRIVER = 'FileBackend';
 
