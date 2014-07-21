@@ -5,7 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Database;
+namespace Vortex;
 
 use Vortex\Config;
 use Vortex\Database\DAO\Manager;
@@ -18,7 +18,7 @@ use Vortex\Logger;
  * @link https://github.com/lichtner/fluentpdo
  * @package Vortex
  */
-class Connection {
+class Database {
     private static $_instance = null;
 
     private $driver;

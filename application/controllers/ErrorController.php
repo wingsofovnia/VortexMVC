@@ -7,7 +7,7 @@
 
 namespace Application\Controllers;
 
-use Vortex\Controller;
+use Vortex\MVC\Controller;
 use Vortex\View;
 
 class ErrorController extends Controller {

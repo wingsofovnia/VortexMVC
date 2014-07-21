@@ -19,6 +19,7 @@ class IndexController extends Controller {
     public function indexAction() {
         //$this->response->setHeader('Content-Type', 'text/plain');
         $this->view->data->firstWords = 'Hello World! It\'s a indexAction!';
+        $this->view->setTemplate('index/index');
     }
 
     /**
@@ -27,7 +28,7 @@ class IndexController extends Controller {
      * @PermissionLevels('0','1');
      */
     public function indexPOSTAction() {
-        $view = new View('index\index');
-        $view->data->firstWords = 'Hello World!  It\'s a indexPOSTAction!';
+        $this->view->setTemplate('index/index');
+        $this->view->data->firstWords = 'Hello World!  It\'s a indexPOSTAction!';
     }
 }

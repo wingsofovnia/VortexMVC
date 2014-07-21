@@ -46,7 +46,7 @@ class Auth {
      * Static initializer
      */
     public static function init() {
-        self::$connection = Database\Connection::getConnection();
+        self::$connection = Database::getConnection();
         self::setHashAlgorithm(function ($credential) {
             return md5($credential);
         });

@@ -49,7 +49,7 @@ class Config extends IniParser {
 
         /* Caching configs... */
         $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
-            'namespace' => CACHE_TAG,
+            'namespace' => Config::CACHE_TAG,
             'lifetime' => Cache::UNLIMITED_LIFE_TIME
         ));
 

@@ -17,9 +17,24 @@ use Vortex\Response;
  * @package Vortex\MVC
  */
 abstract class Controller {
+    /**
+     * @var \Vortex\Request
+     */
     protected $request;
+
+    /**
+     * @var \Vortex\Response
+     */
     protected $response;
+
+    /**
+     * @var \Vortex\Config
+     */
     protected $config;
+
+    /**
+     * @var View
+     */
     protected $view;
 
     /**

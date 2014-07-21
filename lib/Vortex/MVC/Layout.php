@@ -5,25 +5,28 @@
  * Date: 18-Jul-2014
  */
 
-namespace Vortex\View;
+namespace Vortex\MVC;
 
 use Vortex\Config;
+use Vortex\Logger;
 use Vortex\MVC\View;
 
 /**
  * Class Layout
  * @package Vortex\View
- * @deprecated
  */
 class Layout extends View {
+    const LAYOUT_SCRIPTS_FOLDER = '_layouts';
+
     private $view;
     private $isLayout;
-    private $layouts;
+    private $layouts = array();
     private $currentLayout;
 
     /**
      * Wraps a view with layout
      * @param View $view a content view
+     * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      * @internal param string $name a name of a view template
      */
@@ -35,17 +38,23 @@ class Layout extends View {
         $config = Config::getInstance();
         $this->isLayout = $config->view->layout->enabled(false);
 
-        $templates = $config->view->layout->templates;
+        if ($this->isLayout) {
+            $templates = $config->view->layout->templates;
 
-        for ($i = 0; $i < count($templates); $i++) {
-            $layout = APPLICATION_PATH . '/views/layouts/' . $templates[$i] . '.'
-                . Config::getInstance()->view->extension('tpl');
+            $dir = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/';
+            for ($i = 0; $i < count($templates); $i++) {
+                $layout = $dir . $templates[$i] . '.'
+                    . Config::getInstance()->view->extension('tpl');
 
-            if (file_exists($layout))
-                $this->layouts[] = $templates[$i];
+                if (file_exists($layout))
+                    $this->layouts[] = $templates[$i];
+            }
+
+            if (count($this->layouts) == 0)
+                throw new \UnexpectedValueException("No valid layouts were found in config");
+
+            $this->setCurrentLayout($config->view->layout->default);
         }
-
-        $this->setCurrentLayout($config->view->layout->default);
     }
 
     /**
@@ -106,7 +115,7 @@ class Layout extends View {
         if (!$this->isEnabled())
             return $this->content();
 
-        $path = APPLICATION_PATH . '/views/layouts/' . $this->getCurrentLayout() . '.'
+        $path = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/' . $this->getCurrentLayout() . '.'
             . Config::getInstance()->view->extension('tpl');
         return $this->ob_include($path);
     }

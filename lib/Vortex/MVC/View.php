@@ -19,14 +19,13 @@ use Vortex\Registry;
 class View {
     public $data;
     protected $path;
+    private $noRender;
 
     /**
      * Init constuctor
-     * @param string $template a name of a view template file
      */
-    private function __construct($template) {
+    public function __construct() {
         $this->data = new Registry();
-        $this->path = $template;
     }
 
     /**
@@ -41,7 +40,7 @@ class View {
         $path .= '.' . Config::getInstance()->view->extension('tpl');
 
         if (!is_file($path))
-            throw new ViewException('Partial <' . $view . '> doesn\'t exist!');
+            throw new ViewException('Partial #{' . $path . '} doesn\'t exist!');
         foreach ($data as $key => $value) {
             $this->data->$key = $value;
         }
@@ -56,13 +55,29 @@ class View {
      * @throws \Vortex\Exceptions\ViewException
      */
     public function widget($widget, $data = array()) {
-        $widget = 'Application\Controllers\Widgets\\' . $widget;
+        $widget = 'Application\Controllers\\' . Widget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
 
+        /** @var $widgetObj Widget */
         $widgetObj = new $widget();
         $widgetObj->data->merge($data);
-        return $widgetObj->render();
+        $widgetObj->render();
+        return $widgetObj->getView()->render();
+    }
+
+    /**
+     * Enables rendering of view
+     */
+    public function enableRendering() {
+        $this->noRender = false;
+    }
+
+    /**
+     * Disables rendering of view
+     */
+    public function disableRendering() {
+        $this->noRender = true;
     }
 
     /**
@@ -70,6 +85,8 @@ class View {
      * @return string rendered view
      */
     public function render() {
+        if ($this->noRender)
+            return null;
         return $this->ob_include($this->path);
     }
 
@@ -85,18 +102,30 @@ class View {
     }
 
     /**
+     * Change view script
+     * @param string $template a template script
+     * @throws \Vortex\Exceptions\ViewException
+     * @return View a new view object
+     */
+    public function setTemplate($template) {
+        $script = APPLICATION_PATH . '/views/' . strtolower($template);
+        $script .= '.' . Config::getInstance()->view->extension('tpl');
+
+        if (!file_exists($script))
+            throw new ViewException("View don't exists!");
+
+        $this->path = $script;
+    }
+
+    /**
      * Creates a view
-     * @param string $viewTpl view name
+     * @param string $script view template name
      * @return \Vortex\MVC\View a cooked view object
      * @throws \Vortex\Exceptions\ViewException
      */
-    public static function factory($viewTpl) {
-        $path = APPLICATION_PATH . '/views/' . strtolower($viewTpl);
-        $path .= '.' . Config::getInstance()->view->extension('tpl');
-
-        if (!file_exists($path))
-            throw new ViewException("View don't exists!");
-
-        return new View($path);
+    public static function factory($script) {
+        $view = new View();
+        $view->setTemplate($script);
+        return $view;
     }
 }

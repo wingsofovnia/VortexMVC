@@ -1,0 +1,1 @@
+<div style="border: 1px solid black; border-radius: 3px; background: #ff7800"> A widget box with text: <?=$this->data->text ?></div>

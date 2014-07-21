@@ -67,4 +67,15 @@ class Registry {
         }
         return false;
     }
+
+    /**
+     * Returns a string of values
+     * @return string vars
+     */
+    public function __toString() {
+        ob_start();
+        var_dump($this->vars);
+        return ob_get_clean();
+    }
+
 } 
