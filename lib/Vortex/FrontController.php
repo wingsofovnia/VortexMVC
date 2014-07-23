@@ -10,8 +10,6 @@
 namespace Vortex;
 
 use Vortex\Exceptions\FrontException;
-use Vortex\MVC\View;
-use Vortex\MVC\Layout;
 
 class FrontController {
     private $config;
@@ -65,7 +63,7 @@ class FrontController {
         if (!class_exists($_controller))
             throw new FrontException('Controller #{' . $_controller . '} does\'t exists!');
 
-        /** @var $_controller \Vortex\MVC\Controller */
+        /** @var $_controller \Vortex\Controller */
         $_controller = new $_controller($this->request, $this->response);
 
         if (is_callable(array($_controller, $_action)) == false)
@@ -73,10 +71,7 @@ class FrontController {
 
         $actionPermissions = $this->request->getPermissions();
         if (count($actionPermissions)) {
-            Logger::error($actionPermissions);
             $userPermissionLevel = Auth::getUserLevel();
-            Logger::debug($userPermissionLevel);
-            Logger::debug($actionPermissions);
             if (count($actionPermissions) > 0 && !in_array($userPermissionLevel, $actionPermissions))
                 throw new FrontException('No permission for Controller#{' . get_class($_controller) . '}, Action#{' . $_action . '}!');
         }

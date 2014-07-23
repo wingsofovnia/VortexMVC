@@ -5,18 +5,14 @@
  * Date: 18-Jul-2014
  */
 
-namespace Vortex\MVC;
-
-use Vortex\Config;
-use Vortex\Logger;
-use Vortex\MVC\View;
+namespace Vortex;
 
 /**
  * Class Layout
  * @package Vortex\View
  */
 class Layout extends View {
-    const LAYOUT_SCRIPTS_FOLDER = '_layouts';
+    const LAYOUT_SCRIPTS_FOLDER = 'layouts';
 
     private $view;
     private $isLayout;
@@ -32,8 +28,10 @@ class Layout extends View {
      */
     public function __construct($view) {
         if (!($view instanceof View))
-            throw new \InvalidArgumentException('Argument $view is not an instance of Vortex\MVC\View');
+            throw new \InvalidArgumentException('Argument $view is not an instance of Vortex\View');
         $this->view = $view;
+
+        $this->scripts = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/';
 
         $config = Config::getInstance();
         $this->isLayout = $config->view->layout->enabled(false);
@@ -41,10 +39,8 @@ class Layout extends View {
         if ($this->isLayout) {
             $templates = $config->view->layout->templates;
 
-            $dir = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/';
             for ($i = 0; $i < count($templates); $i++) {
-                $layout = $dir . $templates[$i] . '.'
-                    . Config::getInstance()->view->extension('tpl');
+                $layout = $this->getScriptPath($templates[$i]);
 
                 if (file_exists($layout))
                     $this->layouts[] = $templates[$i];
@@ -115,8 +111,7 @@ class Layout extends View {
         if (!$this->isEnabled())
             return $this->content();
 
-        $path = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/' . $this->getCurrentLayout() . '.'
-            . Config::getInstance()->view->extension('tpl');
+        $path = $this->getScriptPath($this->getCurrentLayout());
         return $this->ob_include($path);
     }
 }

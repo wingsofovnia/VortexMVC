@@ -4,18 +4,15 @@
  * Author: Ilia Ovchinnikov
  * Date: 19-May-14
  */
-namespace Vortex\MVC;
 
-use Vortex\Logger;
-use Vortex\Registry;
+namespace Vortex;
 
 /**
  * Class Widget is a simplified controller for a reusable widgets
  * @package Vortex\View
  */
 abstract class Widget {
-    const WIDGET_SCRIPTS_FOLDER = '_widgets';
-    const WIDGET_CONTROLLERS_NAMESPACE = '_Widgets';
+    const WIDGET_CONTROLLERS_NAMESPACE = 'Widgets';
     /**
      * @var \Vortex\Registry
      */
@@ -30,8 +27,8 @@ abstract class Widget {
 
         $viewName = explode('\\', get_called_class());
         $viewName = array_pop($viewName);
-        $viewName =  strtolower(str_replace('Widget', '', $viewName));
-        $this->view = View::factory(Widget::WIDGET_SCRIPTS_FOLDER . '/' . $viewName);
+        $viewName = strtolower(str_replace('Widget', '', $viewName));
+        $this->view = View::factory($viewName);
     }
 
     /**

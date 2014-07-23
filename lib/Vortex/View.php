@@ -5,11 +5,8 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\MVC;
-
-use Vortex\Config;
+namespace Vortex;
 use Vortex\Exceptions\ViewException;
-use Vortex\Registry;
 
 /**
  * Class Vortex_View
@@ -17,8 +14,10 @@ use Vortex\Registry;
  * @package Vortex\MVC
  */
 class View {
+    const VIEW_SCRIPTS_FOLDER = 'templates';
     public $data;
     protected $path;
+    protected $scripts;
     private $noRender;
 
     /**
@@ -26,6 +25,12 @@ class View {
      */
     public function __construct() {
         $this->data = new Registry();
+        $this->scripts = APPLICATION_PATH . '/views/' . View::VIEW_SCRIPTS_FOLDER . '/';
+    }
+
+    protected function getScriptPath($view) {
+        $extension = Config::getInstance()->view->extension('tpl');
+        return $this->scripts . $view . '.' . $extension;
     }
 
     /**
@@ -36,8 +41,7 @@ class View {
      * @throws ViewException if partial doesn't exist
      */
     public function partial($view, $data = array()) {
-        $path = APPLICATION_PATH . '/views/' . $view;
-        $path .= '.' . Config::getInstance()->view->extension('tpl');
+        $path = $this->getScriptPath($view);
 
         if (!is_file($path))
             throw new ViewException('Partial #{' . $path . '} doesn\'t exist!');
@@ -55,6 +59,7 @@ class View {
      * @throws \Vortex\Exceptions\ViewException
      */
     public function widget($widget, $data = array()) {
+        $widget = ucfirst(strtolower($widget));
         $widget = 'Application\Controllers\\' . Widget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
@@ -104,15 +109,14 @@ class View {
     /**
      * Change view script
      * @param string $template a template script
-     * @throws \Vortex\Exceptions\ViewException
+     * @throws ViewException
      * @return View a new view object
      */
     public function setTemplate($template) {
-        $script = APPLICATION_PATH . '/views/' . strtolower($template);
-        $script .= '.' . Config::getInstance()->view->extension('tpl');
+        $script = $this->getScriptPath(strtolower($template));
 
         if (!file_exists($script))
-            throw new ViewException("View don't exists!");
+            throw new ViewException('View #{' . $script . '} don\'t exists!');
 
         $this->path = $script;
     }
@@ -120,7 +124,7 @@ class View {
     /**
      * Creates a view
      * @param string $script view template name
-     * @return \Vortex\MVC\View a cooked view object
+     * @return \Vortex\View a cooked view object
      * @throws \Vortex\Exceptions\ViewException
      */
     public static function factory($script) {

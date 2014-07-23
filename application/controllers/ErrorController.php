@@ -7,8 +7,7 @@
 
 namespace Application\Controllers;
 
-use Vortex\MVC\Controller;
-use Vortex\View;
+use Vortex\Controller;
 
 class ErrorController extends Controller {
     public function indexAction() {

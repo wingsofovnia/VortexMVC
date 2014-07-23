@@ -7,8 +7,7 @@
 
 namespace Application\Controllers;
 
-use Vortex\MVC\Controller;
-use Vortex\MVC\View;
+use Vortex\Controller;
 
 class IndexController extends Controller {
     /**

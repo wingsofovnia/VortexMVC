@@ -5,11 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\MVC;
-
-use Vortex\Config;
-use Vortex\Request;
-use Vortex\Response;
+namespace Vortex;
 
 /**
  * Class Vortex_Controller
