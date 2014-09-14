@@ -10,7 +10,7 @@ namespace Vortex;
 /**
  * Class Vortex_Controller
  * A general class of all controllers
- * @package Vortex\MVC
+ * @package Vortex
  */
 abstract class Controller {
     /**
@@ -29,7 +29,7 @@ abstract class Controller {
     protected $config;
 
     /**
-     * @var View
+     * @var \Vortex\View
      */
     protected $view;
 
@@ -42,7 +42,6 @@ abstract class Controller {
         $this->request = $request;
         $this->response = $response;
         $this->config = Config::getInstance();
-        $this->init();
     }
 
     /**

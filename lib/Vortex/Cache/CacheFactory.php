@@ -7,7 +7,6 @@
 
 namespace Vortex\Cache;
 
-use Vortex\ArrayObjectMagic;
 use Vortex\Cache\Drivers\CacheBackend;
 use Vortex\Config;
 use Vortex\Exceptions\CacheException;
@@ -21,6 +20,19 @@ abstract class CacheFactory {
     const FILE_DRIVER = 'FileBackend';
 
     public static $masterSwitch;
+
+    /**
+     * Constructs a cache object based on specific adapter and it's options
+     * @param string $driver driver name (use const of this class)
+     * @param array $options options
+     * @return Cache configured cache object
+     * @throws \Vortex\Exceptions\CacheException if error occupied
+     *
+     * @deprecated
+     */
+    public static function getFactory($driver, $options = array()) {
+        self::build($driver, $options);
+    }
 
     /**
      * Constructs a cache object based on specific adapter and it's options
@@ -53,24 +65,13 @@ abstract class CacheFactory {
         if (!$options['masterSwitch'])
             Logger::warning("Warning! Global cache switch: " . $options['masterSwitch'] . '! Nothing will be cached!');
 
+
+        /** @var $cacheObject \Vortex\Cache\Drivers\CacheBackend*/
         $cacheObject = new $driver();
         $cacheObject->config($options);
         $cacheObject->check();
 
         return $cacheObject;
-    }
-
-    /**
-     * Constructs a cache object based on specific adapter and it's options
-     * @param string $driver driver name (use const of this class)
-     * @param array $options options
-     * @return Cache configured cache object
-     * @throws \Vortex\Exceptions\CacheException if error occupied
-     *
-     * @deprecated
-     */
-    public static function getFactory($driver, $options = array()) {
-        self::build($driver, $options);
     }
 }
 

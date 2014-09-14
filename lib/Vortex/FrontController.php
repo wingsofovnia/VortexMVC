@@ -76,7 +76,16 @@ class FrontController {
                 throw new FrontException('No permission for Controller#{' . get_class($_controller) . '}, Action#{' . $_action . '}!');
         }
 
+        /* Running bootstrapper */
+        $bootstrapClass = 'Application\Initiator';
+        if (class_exists($bootstrapClass)) {
+            /** @var $bootstrap \Vortex\Bootstrap */
+            $bootstrap = new $bootstrapClass($this->request, $this->response);
+            $bootstrap->process();
+        }
+
         $_controller->setView(View::factory($controller . '/' . $action));
+        $_controller->init();
         $_controller->$_action();
 
         if ($_controller == null)

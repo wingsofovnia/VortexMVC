@@ -7,10 +7,6 @@
 
 namespace Vortex;
 
-use Vortex\Config;
-use Vortex\Database\DAO\Manager;
-use Vortex\Logger;
-
 /**
  * Class Vortex_Connection
  * This class establishes connection to database
@@ -61,9 +57,6 @@ class Database {
         Logger::debug("Connected to database!");
     }
 
-    protected function __clone() {
-    }
-
     /**
      * Gets a FluentPDO connection
      * @return \FluentPDO instance
@@ -73,5 +66,8 @@ class Database {
             self::$_instance = new self();
         }
         return self::$_instance->connection;
+    }
+
+    protected function __clone() {
     }
 }
