@@ -23,32 +23,11 @@ class Session {
     private $autoDelete = false;
 
     /**
-     * Starts a session
-     * @throws SessionException if headers have been already sent
+     * Constructs a namespaced session
+     * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
      */
-    private static function start() {
-        if (self::isStarted())
-            return;
-        if (headers_sent())
-            throw new SessionException('Can\'t start session coz headers have been already started!');
-        session_start();
-        self::$isStarted = true;
-    }
-
-    /**
-     * Destroys all sessions and it's data
-     */
-    public static function destroyAll() {
-        $_SESSION = array();
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
-        session_destroy();
-        self::$isStarted = false;
+    public function __construct($namespace = Session::GLOBAL_SCOPE) {
+        $this->setNameSpace($namespace);
     }
 
     /**
@@ -70,19 +49,35 @@ class Session {
     }
 
     /**
-     * Checks if session has been started already
-     * @return bool if session is started, false - if not
+     * Checks if session namespace is global
+     * @return bool true if global
      */
-    public static function isStarted() {
-        return self::$isStarted;
+    public function isGlobalNamespace() {
+        return $this->namespace == Session::GLOBAL_SCOPE;
     }
 
     /**
-     * Constructs a namespaced session
-     * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
+     * Destroys all sessions and it's data
      */
-    public function __construct($namespace = Session::GLOBAL_SCOPE) {
-        $this->setNameSpace($namespace);
+    public static function destroyAll() {
+        $_SESSION = array();
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        session_destroy();
+        self::$isStarted = false;
+    }
+
+    /**
+     * Gets a name of session's namepsace
+     * @return string namespace
+     */
+    public function getNameSpace() {
+        return $this->namespace;
     }
 
     /**
@@ -98,22 +93,6 @@ class Session {
     }
 
     /**
-     * Gets a name of session's namepsace
-     * @return string namespace
-     */
-    public function getNameSpace() {
-        return $this->namespace;
-    }
-
-    /**
-     * Checks if session namespace is global
-     * @return bool true if global
-     */
-    public function isGlobalNamespace() {
-        return $this->namespace == Session::GLOBAL_SCOPE;
-    }
-
-    /**
      * Enables auto deleting session values after reading
      */
     public function enableAutoDelete() {
@@ -125,6 +104,24 @@ class Session {
      */
     public function disableAutoDelete() {
         $this->autoDelete = false;
+    }
+
+    /**
+     * Magic alias of $this->get(k);
+     * @param string $key a key
+     * @return mixed a value
+     */
+    public function __get($key) {
+        return $this->get($key);
+    }
+
+    /**
+     * Magic alias for $this->set(k, v);
+     * @param string $key a key
+     * @param mixed $value a value
+     */
+    public function __set($key, $value) {
+        $this->set($key, $value);
     }
 
     /**
@@ -147,7 +144,7 @@ class Session {
             $session = $_SESSION;
         }
 
-        if ((bool)count(array_filter(array_keys($key), 'is_string')) == true) {
+        if (is_array($key) && count(array_filter(array_keys($key), 'is_string')) == true) {
             foreach ($key as $k => $v)
                 $session[$k] = $v;
         } else {
@@ -156,12 +153,24 @@ class Session {
     }
 
     /**
-     * Magic alias for $this->set(k, v);
-     * @param string $key a key
-     * @param mixed $value a value
+     * Checks if session has been started already
+     * @return bool if session is started, false - if not
      */
-    public function __set($key, $value) {
-        $this->set($key, $value);
+    public static function isStarted() {
+        return self::$isStarted;
+    }
+
+    /**
+     * Starts a session
+     * @throws SessionException if headers have been already sent
+     */
+    private static function start() {
+        if (self::isStarted())
+            return;
+        if (headers_sent())
+            throw new SessionException('Can\'t start session coz headers have been already started!');
+        session_start();
+        self::$isStarted = true;
     }
 
     /**
@@ -185,14 +194,5 @@ class Session {
         }
 
         return null;
-    }
-
-    /**
-     * Magic alias of $this->get(k);
-     * @param string $key a key
-     * @return mixed a value
-     */
-    public function __get($key) {
-        return $this->get($key);
     }
 } 
