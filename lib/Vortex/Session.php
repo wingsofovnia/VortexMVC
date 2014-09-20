@@ -125,31 +125,29 @@ class Session {
     }
 
     /**
-     * Writes key-value pair or array values into Session
-     * @param string|array $key a key for key-value pair, or ASSOC array
-     * @param mixed $value a value
-     * @throws \InvalidArgumentException
+     * Picks the data from Session
+     * @param string $key a key
+     * @return mixed a value
      */
-    public function set($key, $value = null) {
-        if (empty($key))
-            throw new \InvalidArgumentException('Param $key must be not empty value!');
-
+    public function get($key) {
         if (!self::isstarted())
             self::start();
 
         if (!$this->isGlobalNamespace()) {
             $namespace = self::NAMESPACE_PREFIX . $this->namespace;
-            $session = $_SESSION[$namespace];
+            $session = &$_SESSION[$namespace];
         } else {
-            $session = $_SESSION;
+            $session = &$_SESSION;
         }
 
-        if (is_array($key) && count(array_filter(array_keys($key), 'is_string')) == true) {
-            foreach ($key as $k => $v)
-                $session[$k] = $v;
-        } else {
-            $session[$key] = $value;
+        if (isset($session[$key])) {
+            $return = $session[$key];
+            if ($this->autoDelete)
+                unset($session[$key]);
+            return $return;
         }
+
+        return null;
     }
 
     /**
@@ -174,25 +172,30 @@ class Session {
     }
 
     /**
-     * Picks the data from Session
-     * @param string $key a key
-     * @return mixed a value
+     * Writes key-value pair or array values into Session
+     * @param string|array $key a key for key-value pair, or ASSOC array
+     * @param mixed $value a value
+     * @throws \InvalidArgumentException
      */
-    public function get($key) {
+    public function set($key, $value = null) {
+        if (empty($key))
+            throw new \InvalidArgumentException('Param $key must be not empty value!');
+
+        if (!self::isstarted())
+            self::start();
+
         if (!$this->isGlobalNamespace()) {
             $namespace = self::NAMESPACE_PREFIX . $this->namespace;
-            $session = & $_SESSION[$namespace];
+            $session = &$_SESSION[$namespace];
         } else {
-            $session = & $_SESSION;
+            $session = &$_SESSION;
         }
 
-        if (isset($session[$key])) {
-            $return = $session[$key];
-            if ($this->autoDelete)
-                unset($session[$key]);
-            return $return;
+        if (is_array($key) && count(array_filter(array_keys($key), 'is_string')) == true) {
+            foreach ($key as $k => $v)
+                $session[$k] = $v;
+        } else {
+            $session[$key] = $value;
         }
-
-        return null;
     }
 } 
