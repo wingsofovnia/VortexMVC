@@ -51,21 +51,9 @@ class Layout extends View {
 
             $this->setCurrentLayout($config->view->layout->default);
         }
-    }
 
-    /**
-     * Returns rendered View object
-     * @return string a view content
-     */
-    public function content() {
-        return $this->view->render();
-    }
-
-    /**
-     * Enables layouts
-     */
-    public function enableLayout() {
-        $this->isLayout = true;
+        if (!$this->view->isRenderable())
+            $this->disableLayout();
     }
 
     /**
@@ -76,11 +64,39 @@ class Layout extends View {
     }
 
     /**
+     * Enables layouts
+     */
+    public function enableLayout() {
+        $this->isLayout = true;
+    }
+
+    /**
+     * Renders a layout
+     * @return string layout content
+     */
+    public function render() {
+        if (!$this->isEnabled())
+            return $this->view->isRenderable() ? $this->content() : null;
+        else {
+            $path = $this->getScriptPath($this->getCurrentLayout());
+            return $this->ob_include($path);
+        }
+    }
+
+    /**
      * Checks if layout system is enabled
      * @return bool
      */
     public function isEnabled() {
         return $this->isLayout;
+    }
+
+    /**
+     * Returns rendered View object
+     * @return string a view content
+     */
+    public function content() {
+        return $this->view->render();
     }
 
     /**
@@ -101,17 +117,5 @@ class Layout extends View {
             return false;
         $this->currentLayout = $currentLayout;
         return true;
-    }
-
-    /**
-     * Renders a layout
-     * @return string layout content
-     */
-    public function render() {
-        if (!$this->isEnabled())
-            return $this->content();
-
-        $path = $this->getScriptPath($this->getCurrentLayout());
-        return $this->ob_include($path);
     }
 }

@@ -18,7 +18,7 @@ class View {
     public $data;
     protected $path;
     protected $scripts;
-    private $noRender;
+    private $noRender = false;
 
     /**
      * Init constuctor
@@ -51,6 +51,11 @@ class View {
         $this->path = $script;
     }
 
+    protected function getScriptPath($view) {
+        $extension = Config::getInstance()->view->extension('tpl');
+        return $this->scripts . $view . '.' . $extension;
+    }
+
     /**
      * Renders another view template
      * @param string $view name of view template
@@ -67,11 +72,6 @@ class View {
             $this->data->$key = $value;
         }
         return $this->ob_include($path);
-    }
-
-    protected function getScriptPath($view) {
-        $extension = Config::getInstance()->view->extension('tpl');
-        return $this->scripts . $view . '.' . $extension;
     }
 
     /**
@@ -111,8 +111,6 @@ class View {
      * @return string rendered view
      */
     public function render() {
-        if ($this->noRender)
-            return null;
         if (!file_exists($this->path))
             throw new ViewException('View #{' . $this->path . '} don\'t exists!');
 
@@ -131,5 +129,13 @@ class View {
      */
     public function disableRendering() {
         $this->noRender = true;
+    }
+
+    /**
+     * Checks if noRender enabled
+     * @return bool true, if noRender == false
+     */
+    public function isRenderable() {
+        return !$this->noRender;
     }
 }
