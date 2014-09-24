@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\Cache;
 
 /**
  * Class CacheException represents errors in caching
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage Cache
  */
 class CacheException extends \RuntimeException {}

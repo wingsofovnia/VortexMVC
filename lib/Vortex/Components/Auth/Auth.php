@@ -5,11 +5,15 @@
  * Date: 29-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Components\Auth;
+use Vortex\HTTP\Session;
+use Vortex\Model\Database;
+use Vortex\Utils\Logger;
 
 /**
  * Class Auth used to authenticate user and determine its permissions
  * @package Vortex
+ * @subpackage Components
  */
 class Auth {
     const GUEST_LEVEL = -1;
@@ -38,7 +42,7 @@ class Auth {
 
     /**
      * Session variable
-     * @var Session
+     * @var \Vortex\HTTP\Session
      */
     private static $session;
 

@@ -5,11 +5,14 @@
  * Date: 15-Jun-14
  */
 
-namespace Vortex;
+namespace Vortex\MVC;
 
 use Vortex\Cache\Cache;
 use Vortex\Cache\CacheFactory;
-use Vortex\Utils\Text;
+use Vortex\HTTP\Request;
+use Vortex\Utils\Annotation;
+use Vortex\Utils\Config;
+use Vortex\Utils\Logger;
 
 /**
  * Class Router defines, what controller and it's action should be executed, based on URL string
@@ -177,7 +180,7 @@ class Router {
             $controller = strtolower($controller);
 
             foreach ($data['methods'] as $methodName => $methodAnnotations) {
-                if (!Text::endsWith($methodName, 'Action'))
+                if (stripos(strrev($methodName), strrev('Action')) !== 0)
                     continue;
                 $action = str_replace('Action', '', $methodName);
 

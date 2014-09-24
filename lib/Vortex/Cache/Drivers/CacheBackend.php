@@ -11,11 +11,12 @@ use Vortex\Cache\Cache;
 
 /**
  * Interface for cache backend
- * @package Vortex\Cache\Drivers
+ * @package Vortex
+ * @subpackage Cache
  */
 interface CacheBackend extends Cache {
     const DEFAULT_LIFE_TIME = 300;
-    const DEFAULT_NAMEPSACE = 'vf';
+    const DEFAULT_NAMESPACE = 'vf';
 
     function check();
 

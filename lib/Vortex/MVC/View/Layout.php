@@ -5,11 +5,13 @@
  * Date: 18-Jul-2014
  */
 
-namespace Vortex;
+namespace Vortex\MVC\View;
+use Vortex\Utils\Config;
 
 /**
  * Class Layout
- * @package Vortex\View
+ * @package Vortex
+ * @subpackage MVC
  */
 class Layout extends View {
     const LAYOUT_SCRIPTS_FOLDER = 'layouts';

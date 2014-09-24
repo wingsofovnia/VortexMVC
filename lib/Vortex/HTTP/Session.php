@@ -5,9 +5,7 @@
  * Date: 28-May-14
  */
 
-namespace Vortex;
-
-use Vortex\Exceptions\SessionException;
+namespace Vortex\HTTP;
 
 /**
  * Class Vortex_Session is a PHP Sessions wrapper with namespaces

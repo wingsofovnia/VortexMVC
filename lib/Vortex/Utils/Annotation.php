@@ -5,13 +5,14 @@
  * Date: 11-Jun-14
  */
 
-namespace Vortex;
+namespace Vortex\Utils;
 
 /**
  * Class Vortex_Annotation
  * This class implements annotations for classes and their methods
  *
  * @package Vortex
+ * @subpackage Utils
  */
 class Annotation {
     const PATTERN = '/\s*\*\s*\@([a-z0-9-_]+)\((.*)\).*/i';

@@ -9,7 +9,7 @@
 define('ROOT_PATH', realpath(dirname(__FILE__)));
 define('LIB_PATH', ROOT_PATH . '/lib');
 define('APPLICATION_PATH', ROOT_PATH . '/application');
-require_once LIB_PATH . '/Vortex/Application.php';
+require_once LIB_PATH . '/Vortex/Application/Application.php';
 
-use \Vortex\Application;
+use Vortex\Application\Application;
 Application::run();

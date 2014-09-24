@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\HTTP;
 
 /**
  * Class SessionException represents errors in Session object
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage HTTP
  */
 class SessionException extends \RuntimeException { }

@@ -5,11 +5,12 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Utils;
 
 /**
  * Class Vortex_Logger is a simple logger implementation
  * @package Vortex
+ * @subpackage Utils
  */
 class Logger {
     const EXCEPTION = -1;

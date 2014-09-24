@@ -7,9 +7,8 @@
 
 namespace Application;
 
-use Vortex\Bootstrap;
-use Vortex\GlobalRegistry;
-use Vortex\Logger;
+use Vortex\Application\Bootstrap;
+use Vortex\Utils\Logger;
 
 class Initiator extends Bootstrap {
     public function initBoostrapTest() {

@@ -5,23 +5,25 @@
  * Date: 14-Sep-14
  */
 
-namespace Vortex;
+namespace Vortex\Application;
+use Vortex\HTTP\Request;
+use Vortex\HTTP\Response;
 
 /**
  * Class Bootstrap provides an interface for child Bootstrap class,
  * methods of what will be called before firing controller's action
  * @package Vortex
+ * @subpackage Application
  */
 abstract class Bootstrap {
-    private $resources;
 
     /**
-     * @var \Vortex\Request
+     * @var \Vortex\HTTP\Request
      */
     protected $request;
 
     /**
-     * @var \Vortex\Response
+     * @var \Vortex\HTTP\Response
      */
     protected $response;
 

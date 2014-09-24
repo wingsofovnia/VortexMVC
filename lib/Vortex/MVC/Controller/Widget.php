@@ -5,11 +5,13 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\MVC\Controller;
+use Vortex\MVC\View\View;
 
 /**
  * Class Widget is a simplified controller for a reusable widgets
- * @package Vortex\View
+ * @package Vortex
+ * @subpackage MVC
  */
 abstract class Widget {
     const WIDGET_CONTROLLERS_NAMESPACE = 'Widgets';

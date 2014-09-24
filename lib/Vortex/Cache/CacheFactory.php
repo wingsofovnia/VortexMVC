@@ -8,13 +8,13 @@
 namespace Vortex\Cache;
 
 use Vortex\Cache\Drivers\CacheBackend;
-use Vortex\Config;
-use Vortex\Exceptions\CacheException;
-use Vortex\Logger;
+use Vortex\Utils\Config;
+use Vortex\Utils\Logger;
 
 /**
  * Class CacheFactory builds a cache object
- * @package Vortex\Cache
+ * @package Vortex
+ * @subpackage Cache
  */
 abstract class CacheFactory {
     const FILE_DRIVER = 'FileBackend';
@@ -26,7 +26,7 @@ abstract class CacheFactory {
      * @param string $driver driver name (use const of this class)
      * @param array $options options
      * @return Cache configured cache object
-     * @throws \Vortex\Exceptions\CacheException if error occupied
+     * @throws CacheException if error occupied
      *
      * @deprecated
      */
@@ -38,8 +38,8 @@ abstract class CacheFactory {
      * Constructs a cache object based on specific adapter and it's options
      * @param string $driver driver name (use const of this class)
      * @param array $options options
+     * @throws CacheException
      * @return Cache configured cache object
-     * @throws \Vortex\Exceptions\CacheException if error occupied
      */
     public static function build($driver, $options = array()) {
         $driver = 'Vortex\Cache\Drivers\\' . $driver;
@@ -57,7 +57,7 @@ abstract class CacheFactory {
         }
 
         if (!isset($options['namespace'])) {
-            $options['namespace'] = CacheBackend::DEFAULT_NAMEPSACE;
+            $options['namespace'] = CacheBackend::DEFAULT_NAMESPACE;
             Logger::warning('Namespace was not specified. Using CacheBackend::DEFAULT_NAMEPSACE instead!');
         }
 

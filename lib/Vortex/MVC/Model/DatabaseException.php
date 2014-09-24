@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\Model;
 
 /**
  * Class DatabaseException represents errors in Database
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage Model
  */
 class DatabaseException extends \RuntimeException {}

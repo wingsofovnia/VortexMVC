@@ -5,13 +5,16 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\MVC\View;
 use Vortex\Exceptions\ViewException;
+use Vortex\MVC\Controller\Widget;
+use Vortex\Utils\Config;
 
 /**
  * Class Vortex_View
  * This class is responsible for web application view
  * @package Vortex
+ * @subpackage MVC
  */
 class View {
     const VIEW_SCRIPTS_FOLDER = 'templates';
@@ -31,8 +34,7 @@ class View {
     /**
      * Creates a view
      * @param string $script view template name
-     * @return \Vortex\View a cooked view object
-     * @throws \Vortex\Exceptions\ViewException
+     * @return \Vortex\MVC\View\View a cooked view object
      */
     public static function factory($script) {
         $view = new View();
@@ -88,11 +90,11 @@ class View {
     /**
      * Renders an widget
      * @param string $widget a widget name
-     * @param array $data additional data
-     * @return string rendered widget
      * @throws \Vortex\Exceptions\ViewException
+     * @internal param array $data additional data
+     * @return string rendered widget
      */
-    public function widget($widget, $data = array()) {
+    public function widget($widget) {
         $widget = ucfirst(strtolower($widget));
         $widget = 'Application\Controllers\\' . Widget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
         if (!class_exists($widget))
@@ -100,14 +102,13 @@ class View {
 
         /** @var $widgetObj Widget */
         $widgetObj = new $widget();
-        $widgetObj->data->merge($data);
         $widgetObj->render();
         return $widgetObj->getView()->render();
     }
 
     /**
      * Renders the whole view
-     * @throws Exceptions\ViewException if view script doesn't exists
+     * @throws \Vortex\Exceptions\ViewException
      * @return string rendered view
      */
     public function render() {

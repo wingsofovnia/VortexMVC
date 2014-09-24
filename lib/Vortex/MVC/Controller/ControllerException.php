@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\MVC\Controller;
 
 /**
  * Class ControllerException represents errors in controllers
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage MVC
  */
 class ControllerException extends \RuntimeException {}

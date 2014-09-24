@@ -5,7 +5,9 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Model;
+use Vortex\Utils\Config;
+use Vortex\Utils\Logger;
 
 /**
  * Class Vortex_Connection
@@ -13,6 +15,7 @@ namespace Vortex;
  * using PDO and wraps it with FluentPDO
  * @link https://github.com/lichtner/fluentpdo
  * @package Vortex
+ * @subpackage Model
  */
 class Database {
     private static $_instance = null;
@@ -51,6 +54,7 @@ class Database {
 
         if (!Config::isProduction())
             $this->connection->debug = function ($BaseQuery) {
+                /** @var $BaseQuery \BaseQuery */
                 Logger::debug("Query: " . $BaseQuery->getQuery() . "\nParameters: " . implode(', ', $BaseQuery->getParameters()) . "\n");
             };
 

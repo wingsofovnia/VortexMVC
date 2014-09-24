@@ -5,31 +5,36 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\MVC\Controller;
+use Vortex\HTTP\Request;
+use Vortex\HTTP\Response;
+use Vortex\MVC\View\View;
+use Vortex\Utils\Config;
 
 /**
  * Class Vortex_Controller
  * A general class of all controllers
  * @package Vortex
+ * @subpackage MVC
  */
 abstract class Controller {
     /**
-     * @var \Vortex\Request
+     * @var \Vortex\HTTP\Request
      */
     protected $request;
 
     /**
-     * @var \Vortex\Response
+     * @var \Vortex\HTTP\Response
      */
     protected $response;
 
     /**
-     * @var \Vortex\Config
+     * @var \Vortex\Utils\Config
      */
     protected $config;
 
     /**
-     * @var \Vortex\View
+     * @var \Vortex\MVC\View\View
      */
     protected $view;
 

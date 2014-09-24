@@ -8,7 +8,7 @@
 
 namespace Application\Controllers\Widgets;
 
-use Vortex\Widget;
+use Vortex\MVC\Controller\Widget;
 
 class TestWidget extends Widget {
 

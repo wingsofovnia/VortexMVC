@@ -5,7 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Utils;
 
 use ArrayObject;
 use IniParser;
@@ -18,6 +18,7 @@ require LIB_PATH . '/Utils/IniParser.php';
  * Class Vortex_Config
  * This class parses application ini settings file into OM
  * @package Vortex
+ * @subpackage Utils
  */
 class Config extends IniParser {
     const CACHE_NAMESPACE_TAG = 'config';

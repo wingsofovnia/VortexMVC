@@ -5,12 +5,14 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\HTTP;
+use Vortex\MVC\Router;
 
 /**
  * Class Vortex_Request implements a wrapper of HTTP Request with additional,
  * extended functionality
  * @package Vortex
+ * @subpackage HTTP
  */
 class Request {
     private $get;

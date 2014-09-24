@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\Components\Auth;
 
 /**
  * Class AuthException represents error of authentication
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage Components
  */
 class AuthException extends \RuntimeException {}

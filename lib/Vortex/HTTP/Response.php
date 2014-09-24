@@ -6,14 +6,13 @@
  *
  */
 
-namespace Vortex;
-
-use Vortex\Exceptions\ResponseException;
+namespace Vortex\HTTP;
 
 /**
  * Class Vortex_Response implements a wrapper of HTTP Response PACKET with additional,
  * extended functionality
  * @package Vortex
+ * @subpackage HTTP
  */
 class Response {
     /* Status codes */

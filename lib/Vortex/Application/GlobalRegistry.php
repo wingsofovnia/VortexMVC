@@ -5,12 +5,13 @@
  * Date: 19-May-14
  */
 
-namespace Vortex;
+namespace Vortex\Application;
 
 /**
  * Class Global
  * An implementation of Registry as a singleton in a global scope
  * @package Vortex
+ * @subpackage Application
  */
 class GlobalRegistry {
     private $registry;

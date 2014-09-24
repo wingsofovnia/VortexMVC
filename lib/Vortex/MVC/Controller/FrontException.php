@@ -5,10 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace Vortex\Exceptions;
+namespace Vortex\MVC\Controller;
 
 /**
  * Class FrontException represents errors in FrontController
- * @package Vortex\Exceptions
+ * @package Vortex
+ * @subpackage MVC
  */
 class FrontException extends \RuntimeException {}
