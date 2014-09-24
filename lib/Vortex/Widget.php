@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  */
 
@@ -14,7 +14,7 @@ namespace Vortex;
 abstract class Widget {
     const WIDGET_CONTROLLERS_NAMESPACE = 'Widgets';
     /**
-     * @var \Vortex\Registry
+     * @var \ArrayObject
      */
     public $data;
     protected $view;
@@ -23,8 +23,7 @@ abstract class Widget {
      * Inits Widget object with default view according to widget class name
      */
     public function __construct() {
-        $this->data = new Registry();
-
+        $this->data = new \ArrayObject();
         $viewName = explode('\\', get_called_class());
         $viewName = array_pop($viewName);
         $viewName = strtolower(str_replace('Widget', '', $viewName));

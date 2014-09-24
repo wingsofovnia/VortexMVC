@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  */
 
@@ -20,7 +20,7 @@ class GlobalRegistry {
      * Creates internal Registry object
      */
     protected function __construct() {
-        $this->registry = new Registry();
+        $this->registry = new \ArrayObject();
     }
 
     protected function __clone() {
@@ -28,9 +28,9 @@ class GlobalRegistry {
 
     /**
      * Instance getter
-     * @return Registry an object of internal registry
+     * @return \ArrayObject an object of internal registry
      */
-    static private function getInstance() {
+    private static function getInstance() {
         if (is_null(self::$_instance)) {
             self::$_instance = new self();
         }
@@ -42,7 +42,7 @@ class GlobalRegistry {
      * @param string $key a key
      * @param mixed $value a value
      */
-    static public function set($key, $value) {
+    public static function set($key, $value) {
         self::getInstance()->$key = $value;
     }
 
@@ -51,7 +51,7 @@ class GlobalRegistry {
      * @param string $key a key of value
      * @return mixed value
      */
-    static public function get($key) {
+    public static function get($key) {
         return self::getInstance()->$key;
     }
 } 

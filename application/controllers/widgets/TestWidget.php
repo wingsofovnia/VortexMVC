@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 23-Jul-14
  * Time: 20:15
  */

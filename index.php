@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: OwnMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  * Time: 18:17
  */

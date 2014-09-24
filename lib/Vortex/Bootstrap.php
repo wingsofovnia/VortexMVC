@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 14-Sep-14
  */
 
@@ -13,6 +13,8 @@ namespace Vortex;
  * @package Vortex
  */
 abstract class Bootstrap {
+    private $resources;
+
     /**
      * @var \Vortex\Request
      */

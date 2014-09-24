@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  */
 
@@ -24,7 +24,7 @@ class View {
      * Init constuctor
      */
     public function __construct() {
-        $this->data = new Registry();
+        $this->data = new \ArrayObject();
         $this->scripts = APPLICATION_PATH . '/views/' . View::VIEW_SCRIPTS_FOLDER . '/';
     }
 

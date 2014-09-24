@@ -125,7 +125,6 @@ Check PHPDoc's of `Vortex\Cache\Cache` for more information.
 #### Something else?
 VortexMVC has many other classes that I don't mention here. Here the list some of them:
  * `Vortex\Annotation` - class, that can parse any annotation for any class/method
- * `Vortex\Registry` - a simple registry implementation
  * `Vortex\GlobalRegistry` - the same with `Vortex\Registry` but made as a singleton with global scope
  * `Vortex\Logger` - a simple logger, made in the best tradition of log4j
  * `Vortex\Request` and `Vortex\Response` - the HTTP Request/Response wrappers, with many convenient methods

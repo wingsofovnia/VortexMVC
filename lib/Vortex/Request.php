@@ -1,7 +1,7 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  */
 
@@ -37,12 +37,11 @@ class Request {
         $_COOKIE = array_filter($_COOKIE);
         $this->cookies = $_COOKIE;
 
-        $this->params = new Registry();
         $this->method = $_SERVER['REQUEST_METHOD'];
 
         $this->router = new Router($this);
         $this->router->parse();
-        $this->params->merge($this->router->getParams());
+        $this->params = new \ArrayObject($this->router->getParams());
     }
 
     /**
