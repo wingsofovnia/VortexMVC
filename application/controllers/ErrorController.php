@@ -1,13 +1,13 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 19-May-14
  */
 
 namespace Application\Controllers;
 
-use Vortex\Controller;
+use Vortex\MVC\Controller\Controller;
 
 class ErrorController extends Controller {
     public function indexAction() {

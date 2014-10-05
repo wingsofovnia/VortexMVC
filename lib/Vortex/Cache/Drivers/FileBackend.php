@@ -1,19 +1,20 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 11-Jun-14
  */
 
 namespace Vortex\Cache\Drivers;
 
 use Vortex\Cache\Cache;
-use Vortex\Exceptions\CacheException;
-use Vortex\Logger;
+use Vortex\Cache\CacheException;
+use Vortex\Utils\Logger;
 
 /**
  * Class implements a File caching Adapter
- * @package Vortex\Cache\Drivers
+ * @package Vortex
+ * @subpackage Cache
  */
 class FileBackend implements CacheBackend {
     private $namespace;

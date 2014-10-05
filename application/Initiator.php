@@ -1,15 +1,14 @@
 <?php
 /**
  * Project: VortexMVC
- * Author: Ilia Ovchinnikov
+ * Author: Illia Ovchynnikov
  * Date: 14-Sep-14
  */
 
 namespace Application;
 
-use Vortex\Bootstrap;
-use Vortex\GlobalRegistry;
-use Vortex\Logger;
+use Vortex\Application\Bootstrap;
+use Vortex\Utils\Logger;
 
 class Initiator extends Bootstrap {
     public function initBoostrapTest() {
