@@ -26,15 +26,12 @@ class Request {
      */
     public function __construct() {
         $_POST = array_map('trim', $_POST);
-        $_POST = array_filter($_POST);
         $this->post = $_POST;
 
         $_GET = array_map('trim', $_GET);
-        $_GET = array_filter($_GET);
         $this->get = $_GET;
 
         $_COOKIE = array_map('trim', $_COOKIE);
-        $_COOKIE = array_filter($_COOKIE);
         $this->cookies = $_COOKIE;
 
         $this->params = new Registry();
@@ -46,21 +43,21 @@ class Request {
     }
 
     /**
-     * Adds value to internal storage
-     * @param string $key a key
-     * @param mixed $value a value
-     */
-    public function addParam($key, $value) {
-        $this->params->$key = $value;
-    }
-
-    /**
      * Adds an array of key-value pairs to storage
      * @param $params
      */
     public function addParams($params) {
         foreach ($params as $k => $v)
             $this->addParam($k, $v);
+    }
+
+    /**
+     * Adds value to internal storage
+     * @param string $key a key
+     * @param mixed $value a value
+     */
+    public function addParam($key, $value) {
+        $this->params->$key = $value;
     }
 
     /**
@@ -104,19 +101,19 @@ class Request {
     }
 
     /**
-     * Gets a name of a method of a request from it's headers
-     * @return string METHOD name
-     */
-    public function getMethod() {
-        return $this->method;
-    }
-
-    /**
      * Checks if request method is POST
      * @return bool true, if POST, else - false
      */
     public function isPost() {
         return 'POST' == $this->getMethod();
+    }
+
+    /**
+     * Gets a name of a method of a request from it's headers
+     * @return string METHOD name
+     */
+    public function getMethod() {
+        return $this->method;
     }
 
     /**
@@ -133,14 +130,6 @@ class Request {
      */
     public function isXMLHttpRequest() {
         return 'XMLHttpRequest' == $this->getHeader('X_REQUESTED_WITH');
-    }
-
-    /**
-     * Checks if user uses secure connection (HTTPS)
-     * @return bool true, if HTTPS
-     */
-    public function isHTTPS() {
-        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
     }
 
     /**
@@ -170,6 +159,14 @@ class Request {
             }
         }
         return null;
+    }
+
+    /**
+     * Checks if user uses secure connection (HTTPS)
+     * @return bool true, if HTTPS
+     */
+    public function isHTTPS() {
+        return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
     }
 
     /**
