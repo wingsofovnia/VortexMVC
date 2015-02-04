@@ -8,12 +8,13 @@
 namespace vortex\application;
 use vortex\http\Request;
 use vortex\http\Response;
+use vortex\mvc\controller\FrontController;
 
 /**
  * Class Bootstrap provides an interface for child Bootstrap class,
  * methods of what will be called before firing controller's action
  */
-abstract class Bootstrap {
+abstract class BootstrapAbstract {
 
     /**
      * @var \vortex\http\Request
@@ -27,12 +28,10 @@ abstract class Bootstrap {
 
     /**
      * Init constructor
-     * @param Request $request a request wrapper
-     * @param Response $response a response wrapper
      */
-    public final function __construct($request, $response) {
-        $this->request = $request;
-        $this->response = $response;
+    public final function __construct() {
+        $this->request = new Request();
+        $this->response = new Response();
     }
 
     /**
@@ -46,5 +45,9 @@ abstract class Bootstrap {
                 echo $this->{$method}();
             }
         }
+
+        /* Continues app lifecycle by running FrontController */
+        $front = new FrontController($this->request, $this->response);
+        $front->run();
     }
 } 

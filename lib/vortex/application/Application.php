@@ -6,29 +6,29 @@
  */
 
 namespace vortex\application;
-use vortex\mvc\controller\FrontController;
-use vortex\utils\Config;
 use vortex\utils\Logger;
 
 /**
  * Class Application
  * This one is an engine and class loader and configurator.
- * Class controls an output, ask @see Vortex_Router for path and
+ * Class controls an output, ask Router class for path and
  * starts particular controller's action.
- * @deprecated should be moved to bootstrap class
  */
 class Application {
-
+    const BOOTSTRAP_CLASS = 'application\Bootstrap';
     /**
      * Runs the application
      */
     public static function run() {
         Application::registerClassLoader();
         Application::registerHandlers();
-        Application::initApplication();
 
-        $front = new FrontController();
-        $front->run();
+        /* Running bootstrap */
+        if (class_exists(Application::BOOTSTRAP_CLASS)) {
+            $cls = Application::BOOTSTRAP_CLASS;
+            $bootstrap = new $cls();
+            $bootstrap->process();
+        }
     }
 
     /**
@@ -51,14 +51,7 @@ class Application {
             Logger::exception((string)$e);
         });
         set_error_handler(function ($code, $message, $file, $line) {
-            Logger::error($message . "\n" . $file . ' at line ' . $line);
+            Logger::error($code . ' : ' . $message . "\n" . $file . ' at line ' . $line);
         });
-    }
-
-    /**
-     * Setups some other parts of application
-     */
-    private static function initApplication() {
-        Logger::level(Config::getInstance()->logger->level(0));
     }
 }

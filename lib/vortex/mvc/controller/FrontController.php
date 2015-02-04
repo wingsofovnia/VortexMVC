@@ -8,8 +8,6 @@
 namespace vortex\mvc\controller;
 
 use vortex\components\auth\Auth;
-use vortex\http\Request;
-use vortex\http\Response;
 use vortex\mvc\view\Layout;
 use vortex\mvc\view\View;
 use vortex\utils\Config;
@@ -19,9 +17,9 @@ class FrontController {
     private $request;
     private $response;
 
-    public function __construct() {
-        $this->request = new Request();
-        $this->response = new Response();
+    public function __construct($request, $response) {
+        $this->request = $request;
+        $this->response = $response;
         $this->config = Config::getInstance();
     }
 
@@ -76,13 +74,6 @@ class FrontController {
             $userPermissionLevel = Auth::getUserLevel();
             if (count($actionPermissions) > 0 && !in_array($userPermissionLevel, $actionPermissions))
                 throw new FrontException('No permission for Controller#{' . get_class($_controller) . '}, Action#{' . $_action . '}!');
-        }
-
-        /* Running bootstrapper */
-        $bootstrapClass = 'application\Initiator';
-        if (class_exists($bootstrapClass)) {
-            $bootstrap = new $bootstrapClass($this->request, $this->response);
-            $bootstrap->process();
         }
 
         $_controller->setView(View::factory($controller . '/' . $action));

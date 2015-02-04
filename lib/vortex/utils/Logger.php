@@ -121,4 +121,6 @@ class Logger {
         self::messageBody($txt, self::DEBUG);
         die();
     }
-} 
+}
+
+Logger::level(Config::getInstance()->logger->level(0));

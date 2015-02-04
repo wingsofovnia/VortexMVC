@@ -12,3 +12,31 @@ require_once LIB_PATH . '/vortex/application/Application.php';
 
 use vortex\application\Application;
 Application::run();
+
+
+/**
+ * Application LifeCycle
+ * ---------------------
+ * Application::run()
+ *  - set-up -> * Class Loader
+ *              * Error Handlers
+ *  - runs -> Bootstrap
+ *             - builds -> * Request
+ *                            - ask route -> Router
+ *                                            -> ask -> Annotations
+ *                                            -> determine -> * Controller
+ *                                                            * Action
+ *                                                            * Addition params from url
+ *                            - parse -> * $_SESSION
+ *                                       * $_COOKIES
+ *                                       * $_POST
+ *                                       * $_GET
+ *                         * Response
+ *             - runs -> * ininFunctions()
+ *                       * FrontController (continues life-cycle)
+ *                          - check -> Auth Permissions
+ *                          - runs -> Controller
+ *                                     - runs -> Action
+ *                          - draws -> View
+ *                          - sends -> Response
+ */
