@@ -274,8 +274,12 @@ class Router {
      */
     private function cleanURL($url) {
         $url = html_entity_decode($url);
-        if (strpos($url, $_SERVER['SERVER_NAME']) !== false)
-            $url = substr($url, strpos($url, $_SERVER['SERVER_NAME']));
+
+        $subPath = Config::getInstance()->router->subpath('');
+
+        if (strlen($subPath) > 0)
+            $url = ltrim($url, $subPath);
+
         if (strlen($url) == 1)
             return '/';
         $url = rtrim($url, '/');
