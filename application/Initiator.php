@@ -5,10 +5,10 @@
  * Date: 14-Sep-14
  */
 
-namespace Application;
+namespace application;
 
-use Vortex\Application\Bootstrap;
-use Vortex\Utils\Logger;
+use vortex\application\Bootstrap;
+use vortex\utils\Logger;
 
 class Initiator extends Bootstrap {
     public function initBoostrapTest() {

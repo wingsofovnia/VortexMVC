@@ -5,9 +5,9 @@
  * Date: 19-May-14
  */
 
-namespace Application\Controllers;
+namespace application\controllers;
 
-use Vortex\MVC\Controller\Controller;
+use vortex\mvc\controller\Controller;
 
 class ErrorController extends Controller {
     public function indexAction() {

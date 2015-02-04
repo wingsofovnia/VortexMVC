@@ -6,9 +6,9 @@
  * Time: 20:15
  */
 
-namespace Application\Controllers\Widgets;
+namespace application\controllers\widgets;
 
-use Vortex\MVC\Controller\Widget;
+use vortex\mvc\controller\Widget;
 
 class TestWidget extends Widget {
 
