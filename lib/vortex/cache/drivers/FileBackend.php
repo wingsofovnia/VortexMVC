@@ -7,14 +7,14 @@
 
 namespace vortex\cache\drivers;
 
-use vortex\cache\Cache;
 use vortex\cache\CacheException;
+use vortex\cache\ICache;
 use vortex\utils\Logger;
 
 /**
  * Class implements a File caching Adapter
  */
-class FileBackend implements CacheBackend {
+class FileBackend implements ICacheBackend {
     private $namespace;
     private $defaultLifetime;
     private $cacheExtension;
@@ -78,7 +78,7 @@ class FileBackend implements CacheBackend {
             return false;
         }
 
-        if (time() - filemtime($path) > $data['lifetime'] && $data['lifetime'] != Cache::UNLIMITED_LIFE_TIME) {
+        if (time() - filemtime($path) > $data['lifetime'] && $data['lifetime'] != ICache::UNLIMITED_LIFE_TIME) {
             Logger::debug('Cache file id = #' . $id . ' old and was deleted!');
             $this->delete($id);
             return false;

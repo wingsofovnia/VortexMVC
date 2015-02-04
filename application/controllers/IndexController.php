@@ -7,9 +7,9 @@
 
 namespace application\controllers;
 
-use vortex\mvc\controller\Controller;
+use vortex\mvc\controller\AController;
 
-class IndexController extends Controller {
+class IndexController extends AController {
     /**
      * @RequestMapping('/customMapping', 'GET');
      * @Redirect('index', 'index');

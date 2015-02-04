@@ -7,8 +7,8 @@
 
 namespace vortex\mvc;
 
-use vortex\cache\Cache;
-use vortex\cache\CacheFactory;
+use vortex\cache\ACacheFactory;
+use vortex\cache\ICache;
 use vortex\http\Request;
 use vortex\utils\Annotation;
 use vortex\utils\Config;
@@ -154,9 +154,9 @@ class Router {
      */
     private function parseAnnotations() {
         /* Init cache object */
-        $cache = CacheFactory::build(CacheFactory::FILE_DRIVER, array(
+        $cache = ACacheFactory::build(ACacheFactory::FILE_DRIVER, array(
             'namespace' => 'vf_router',
-            'lifetime' => Cache::UNLIMITED_LIFE_TIME
+            'lifetime' => ICache::UNLIMITED_LIFE_TIME
         ));
 
         /* Checking if annotations have already parsed */

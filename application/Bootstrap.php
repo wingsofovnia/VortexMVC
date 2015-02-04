@@ -7,10 +7,10 @@
 
 namespace application;
 
-use vortex\application\BootstrapAbstract;
+use vortex\application\ABootstrap;
 use vortex\utils\Logger;
 
-class Bootstrap extends BootstrapAbstract {
+class Bootstrap extends ABootstrap {
     public function initBootstrapTest() {
         Logger::debug("Bootstrap Initiator Works Fine!");
     }

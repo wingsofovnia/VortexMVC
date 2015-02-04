@@ -10,7 +10,7 @@ namespace vortex\cache;
 /**
  * Interface Cache
  */
-interface Cache {
+interface ICache {
     const UNLIMITED_LIFE_TIME = -1;
 
     function save($id, $data = null, $time = null);

@@ -15,7 +15,7 @@ use vortex\utils\Config;
  * Class Vortex_Controller
  * A general class of all controllers
  */
-abstract class Controller {
+abstract class AController {
     /**
      * @var \vortex\http\Request
      */

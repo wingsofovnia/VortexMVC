@@ -7,12 +7,12 @@
 
 namespace vortex\cache\drivers;
 
-use vortex\cache\Cache;
+use vortex\cache\ICache;
 
 /**
  * Interface for cache backend
  */
-interface CacheBackend extends Cache {
+interface ICacheBackend extends ICache {
     const DEFAULT_LIFE_TIME = 300;
     const DEFAULT_NAMESPACE = 'vf';
 

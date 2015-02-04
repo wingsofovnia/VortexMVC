@@ -7,14 +7,14 @@
 
 namespace vortex\cache;
 
-use vortex\cache\drivers\CacheBackend;
+use vortex\cache\drivers\ICacheBackend;
 use vortex\utils\Config;
 use vortex\utils\Logger;
 
 /**
  * Class CacheFactory builds a cache object
  */
-abstract class CacheFactory {
+abstract class ACacheFactory {
     const FILE_DRIVER = 'FileBackend';
 
     public static $masterSwitch;
@@ -23,9 +23,9 @@ abstract class CacheFactory {
      * Constructs a cache object based on specific adapter and it's options
      * @param string $driver driver name (use const of this class)
      * @param array $options options
-     * @return Cache configured cache object
+     * @return ICache configured cache object
      * @throws CacheException if error occupied
-     *
+
      * @deprecated
      */
     public static function getFactory($driver, $options = array()) {
@@ -37,7 +37,7 @@ abstract class CacheFactory {
      * @param string $driver driver name (use const of this class)
      * @param array $options options
      * @throws CacheException
-     * @return Cache configured cache object
+     * @return ICache configured cache object
      */
     public static function build($driver, $options = array()) {
         $driver = 'vortex\cache\drivers\\' . $driver;
@@ -46,16 +46,16 @@ abstract class CacheFactory {
             throw new CacheException('Driver <' . $driver . '> is not a class!');
 
         $interfaces = class_implements($driver);
-        if (!isset($interfaces['vortex\cache\drivers\CacheBackend']))
+        if (!isset($interfaces['vortex\cache\drivers\ICacheBackend']))
             throw new CacheException('Driver is not an instance of CacheBackend interface!');
 
         if (!isset($options['lifetime'])) {
-            $options['lifetime'] = CacheBackend::DEFAULT_LIFE_TIME;
+            $options['lifetime'] = ICacheBackend::DEFAULT_LIFE_TIME;
             Logger::warning('Lifetime was not specified. Using CacheBackend::DEFAULT_LIFE_TIME instead!');
         }
 
         if (!isset($options['namespace'])) {
-            $options['namespace'] = CacheBackend::DEFAULT_NAMESPACE;
+            $options['namespace'] = ICacheBackend::DEFAULT_NAMESPACE;
             Logger::warning('Namespace was not specified. Using CacheBackend::DEFAULT_NAMEPSACE instead!');
         }
 
@@ -64,7 +64,7 @@ abstract class CacheFactory {
             Logger::warning("Warning! Global cache switch: " . $options['masterSwitch'] . '! Nothing will be cached!');
 
 
-        /** @var $cacheObject \vortex\cache\drivers\CacheBackend*/
+        /** @var $cacheObject \vortex\cache\drivers\ICacheBackend */
         $cacheObject = new $driver();
         $cacheObject->config($options);
         $cacheObject->check();
@@ -73,4 +73,4 @@ abstract class CacheFactory {
     }
 }
 
-CacheFactory::$masterSwitch = Config::getInstance()->cache->enabled(true);
+ACacheFactory::$masterSwitch = Config::getInstance()->cache->enabled(true);

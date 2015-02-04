@@ -14,7 +14,7 @@ use vortex\mvc\controller\FrontController;
  * Class Bootstrap provides an interface for child Bootstrap class,
  * methods of what will be called before firing controller's action
  */
-abstract class BootstrapAbstract {
+abstract class ABootstrap {
 
     /**
      * @var \vortex\http\Request

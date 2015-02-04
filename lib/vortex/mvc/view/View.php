@@ -6,7 +6,7 @@
  */
 
 namespace vortex\mvc\view;
-use vortex\mvc\Controller\Widget;
+use vortex\mvc\Controller\AWidget;
 use vortex\utils\Config;
 
 /**
@@ -93,11 +93,11 @@ class View {
      */
     public function widget($widget) {
         $widget = ucfirst(strtolower($widget));
-        $widget = 'Application\Controllers\\' . Widget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
+        $widget = 'Application\Controllers\\' . AWidget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
 
-        /** @var $widgetObj Widget */
+        /** @var $widgetObj AWidget */
         $widgetObj = new $widget();
         $widgetObj->render();
         return $widgetObj->getView()->render();

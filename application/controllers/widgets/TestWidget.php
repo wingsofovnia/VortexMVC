@@ -8,9 +8,9 @@
 
 namespace application\controllers\widgets;
 
-use vortex\mvc\controller\Widget;
+use vortex\mvc\controller\AWidget;
 
-class TestWidget extends Widget {
+class TestAWidget extends AWidget {
 
     /**
      * Processes a widget's logic

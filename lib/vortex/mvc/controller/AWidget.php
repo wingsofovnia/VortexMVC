@@ -11,7 +11,7 @@ use vortex\mvc\view\View;
 /**
  * Class Widget is a simplified controller for a reusable widgets
  */
-abstract class Widget {
+abstract class AWidget {
     const WIDGET_CONTROLLERS_NAMESPACE = 'Widgets';
 
     /**
