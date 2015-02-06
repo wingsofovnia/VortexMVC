@@ -8,11 +8,10 @@
 define('ROOT_PATH', realpath(dirname(__FILE__)));
 define('LIB_PATH', ROOT_PATH . '/lib');
 define('APPLICATION_PATH', ROOT_PATH . '/application');
-require_once LIB_PATH . '/vortex/application/Application.php';
+require_once LIB_PATH . '/vortex/Application.php';
 
-use vortex\application\Application;
+use vortex\Application;
 Application::run();
-
 
 /**
  * Application LifeCycle

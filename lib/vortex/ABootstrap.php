@@ -5,7 +5,7 @@
  * Date: 14-Sep-14
  */
 
-namespace vortex\application;
+namespace vortex;
 use vortex\http\Request;
 use vortex\http\Response;
 use vortex\mvc\controller\FrontController;

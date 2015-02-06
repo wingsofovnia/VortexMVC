@@ -7,7 +7,7 @@
 
 namespace application;
 
-use vortex\application\ABootstrap;
+use vortex\ABootstrap;
 use vortex\utils\Logger;
 
 class Bootstrap extends ABootstrap {

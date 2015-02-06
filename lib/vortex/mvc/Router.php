@@ -7,10 +7,7 @@
 
 namespace vortex\mvc;
 
-use vortex\cache\ACacheFactory;
-use vortex\cache\ICache;
 use vortex\http\Request;
-use vortex\utils\Annotation;
 use vortex\utils\Config;
 use vortex\utils\Logger;
 
@@ -19,16 +16,14 @@ use vortex\utils\Logger;
  * and predefined routers/redirects with annotations of controller's actions
  */
 class Router {
-    const ROUTE_METHOD_ALL = -1;
-
     private $url;
     private $req;
 
-    private $routes;
+    private $isMapping;
+    private $mappings;
 
     private $controller;
     private $action;
-    private $permissions;
     private $params;
 
 
@@ -42,7 +37,10 @@ class Router {
 
         $this->controller = Config::getInstance()->controller->default;
         $this->action = Config::getInstance()->action->default;
-        $this->permissions = array();
+        $this->isMapping = Config::getInstance()->router->mapping->enabled(true);
+
+        if ($this->isMapping)
+            $this->mappings = $this->parseMappings();
 
         $this->params = array();
     }
@@ -83,14 +81,6 @@ class Router {
     }
 
     /**
-     * Returns an array of permission level for this action
-     * @return array array of int levels
-     */
-    public function getPermissions() {
-        return $this->permissions;
-    }
-
-    /**
      * Gets params, parsed from url
      * @return array params
      */
@@ -102,18 +92,8 @@ class Router {
      * Runs router's processing param1/val1/param2/val2
      */
     public function parse() {
-        /* Reading for predefined routes and redirects from annotations */
-        $this->parseAnnotations();
-
-        /* First, looking if some action requested mapping for this url */
-        $predefined = false;
-        Logger::debug($this->url);
-        foreach ($this->routes['mapping'] as $method => $routes) {
-            if ($method != self::ROUTE_METHOD_ALL && strcasecmp($method, $this->req->getMethod()) != 0)
-                continue;
-
-            foreach ($routes as $route) {
-                $pattern = $route['pattern'];
+        if ($this->isMapping && $this->mappings) {
+            foreach ($this->mappings as $pattern => $route) {
                 if (preg_match($pattern, $this->url, $params)) {
                     /* Defining controller and action */
                     $this->controller = $route['controller'];
@@ -122,105 +102,12 @@ class Router {
                     /* Other part of url may contain params. Lets try to merge them */
                     $params = $this->explodeUrl(str_replace(array_shift($params), '', $this->url));
                     $this->mergeUrlParams($params);
-
                     Logger::debug('Predefined route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
-                    $predefined = true;
-                    break;
+                    return;
                 }
             }
         }
 
-        /* If it not predefined, we should parse ours url and determine what to open */
-        if (!$predefined) {
-            $this->parseURL();
-            Logger::debug('Parsed route = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
-        }
-
-        /* Our identified action can have @Redirect annotation. Checking this.. */
-        if (isset($this->routes['redirect'][$this->controller][$this->action])) {
-            $ctrl = $this->controller;
-            $this->controller = $this->routes['redirect'][$ctrl][$this->action]['controller'];
-            $this->action = $this->routes['redirect'][$ctrl][$this->action]['action'];
-            Logger::debug('Redirected to = {controller: ' . $this->controller . ', action = ' . $this->action . '}');
-        }
-
-        /* Retrieving permissions from annotations */
-        if (isset($this->routes['permissions'][$this->controller][$this->action]))
-            $this->permissions = $this->routes['permissions'][$this->controller][$this->action];
-    }
-
-    /**
-     * Parses routes form controller's annotations
-     */
-    private function parseAnnotations() {
-        /* Init cache object */
-        $cache = ACacheFactory::build(ACacheFactory::FILE_DRIVER, array(
-            'namespace' => 'vf_router',
-            'lifetime' => ICache::UNLIMITED_LIFE_TIME
-        ));
-
-        /* Checking if annotations have already parsed */
-        $routes = $cache->load('annotations');
-        if ($routes) {
-            $this->routes = $routes;
-            return;
-        }
-
-        /* Asking for all annotations for classes and their methods in dir Controllers */
-        $dir = APPLICATION_PATH . '/controllers/';
-        $filter = '*Controller';
-        $classNamespace = 'application\controllers\\';
-        $annotations = Annotation::getAllClassFilesAnnotations($dir, $filter, $classNamespace);
-
-        /* Retrieving Annotation::REQUEST_MAPPING, Annotation::REDIRECT and Annotation::PERMISSIONS data */
-        $routes = array('mapping' => array(), 'redirect' => array(), 'permissions' => array());
-        foreach ($annotations as $className => $data) {
-            $controller = str_replace('Controller', '', $className);
-            $controller = strtolower($controller);
-
-            foreach ($data['methods'] as $methodName => $methodAnnotations) {
-                if (stripos(strrev($methodName), strrev('Action')) !== 0)
-                    continue;
-                $action = str_replace('Action', '', $methodName);
-
-                if (isset($methodAnnotations[Annotation::PERMISSIONS])) {
-                    $routes['permissions'][$controller][$action] = $methodAnnotations[Annotation::PERMISSIONS];
-                }
-
-                if (isset($methodAnnotations[Annotation::REDIRECT])) {
-                    $routes['redirect'][$controller][$action] = array(
-                        'controller' => $methodAnnotations[Annotation::REDIRECT][0],
-                        'action' => $methodAnnotations[Annotation::REDIRECT][1]
-                    );
-                }
-
-                if (isset($methodAnnotations[Annotation::REQUEST_MAPPING])) {
-                    if (!isset($methodAnnotations[Annotation::REQUEST_MAPPING][0]))
-                        throw new \InvalidArgumentException("Bad REQUEST_MAPPING annotation");
-
-                    $pattern = '/^' . str_replace('/', '\/', $methodAnnotations[Annotation::REQUEST_MAPPING][0]) . '(\/|$)/i';
-                    $method = isset($methodAnnotations[Annotation::REQUEST_MAPPING][1]) ?
-                        $methodAnnotations[Annotation::REQUEST_MAPPING][1] : self::ROUTE_METHOD_ALL;
-
-                    $routes['mapping'][$method][] = array(
-                        'pattern' => $pattern,
-                        'controller' => $controller,
-                        'action' => $action
-                    );
-                }
-            }
-        }
-
-        Logger::debug($routes);
-        /* Caching */
-        $cache->save('annotations', $routes);
-        $this->routes = $routes;
-    }
-
-    /**
-     * Parses the requested controller and action in URL
-     */
-    private function parseURL() {
         $args = $this->explodeUrl();
         if (!$args)
             return;
@@ -273,18 +160,40 @@ class Router {
      * @return string a cleaned url
      */
     private function cleanURL($url) {
-        $url = html_entity_decode($url);
-
+        $url = utf8_decode(urldecode(($url)));
         $subPath = Config::getInstance()->router->subpath('');
 
-        if (strlen($subPath) > 0)
-            $url = ltrim($url, $subPath);
+        if (strlen($subPath) > 0 && substr($url, 0, strlen($subPath)) == $subPath)
+            $url = substr($url, strlen($subPath));
 
-        if (strlen($url) == 1)
-            return '/';
-        $url = rtrim($url, '/');
-        $url = preg_replace('/\s+/', '', $url);
         $url = preg_replace('/[^A-Za-z0-9\-\/]/', '', $url);
         return strtolower($url);
+    }
+
+    /**
+     * Parses predefined routes from application.ini
+     * @return array a set of routes
+     */
+    private function parseMappings() {
+        $rawRoutes = Config::getInstance()->router->mappings;
+        $mappings = array();
+
+        foreach ($rawRoutes as $route) {
+            $pattern = '/^' . str_replace('/', '\/', $route['pattern']) . '(\/|$)/i';
+            $mappings[$pattern] = array(
+                'controller'    =>  $route['controller'],
+                'action'        =>  isset($route['action']) ? $route['action'] : 'index'
+            );
+        }
+
+        return $mappings;
+    }
+
+    /**
+     * Changes master switch of using predefined routes
+     * @param bool $isMapping
+     */
+    public function setIsMapping($isMapping) {
+        $this->isMapping = !!$isMapping;
     }
 }

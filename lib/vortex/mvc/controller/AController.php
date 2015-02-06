@@ -9,7 +9,9 @@ namespace vortex\mvc\controller;
 use vortex\http\Request;
 use vortex\http\Response;
 use vortex\mvc\view\View;
+use vortex\utils\Annotation;
 use vortex\utils\Config;
+use vortex\utils\Logger;
 
 /**
  * Class Vortex_Controller

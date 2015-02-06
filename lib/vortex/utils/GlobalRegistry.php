@@ -5,7 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace vortex\application;
+namespace vortex\utils;
 
 /**
  * Class Global

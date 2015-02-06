@@ -7,7 +7,6 @@
 
 namespace vortex\mvc\controller;
 
-use vortex\components\auth\Auth;
 use vortex\mvc\view\Layout;
 use vortex\mvc\view\View;
 use vortex\utils\Config;
@@ -64,17 +63,11 @@ class FrontController {
         if (!class_exists($_controller))
             throw new FrontException('Controller #{' . $_controller . '} does\'t exists!');
 
+        /** @var AController $_controller  */
         $_controller = new $_controller($this->request, $this->response);
 
         if (is_callable(array($_controller, $_action)) == false)
             throw new FrontException('Action #{' . $_action . '} does\'t exists!');
-
-        $actionPermissions = $this->request->getPermissions();
-        if (count($actionPermissions) && $this->config->components->auth->enabled(true)) {
-            $userPermissionLevel = Auth::getUserLevel();
-            if (count($actionPermissions) > 0 && !in_array($userPermissionLevel, $actionPermissions))
-                throw new FrontException('No permission for Controller#{' . get_class($_controller) . '}, Action#{' . $_action . '}!');
-        }
 
         $_controller->setView(View::factory($controller . '/' . $action));
         $_controller->init();

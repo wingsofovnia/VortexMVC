@@ -7,6 +7,7 @@
 
 namespace vortex\http;
 use vortex\mvc\Router;
+use vortex\utils\Logger;
 
 /**
  * Class Vortex_Request implements a wrapper of HTTP Request with additional,
