@@ -201,9 +201,9 @@ class Response {
     }
 
     /**
-     * Prepares headers and sends a packet's body
+     * Prepares headers and sends the response
      */
-    public function sendPacket() {
+    public function send() {
         /***************************
          *          PACKET          *
          ****************************

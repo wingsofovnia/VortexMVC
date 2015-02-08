@@ -46,7 +46,7 @@ class FrontController {
         }
         $content = ob_get_clean();
         $this->response->setBody($content);
-        $this->response->sendPacket();
+        $this->response->send();
     }
 
     /**

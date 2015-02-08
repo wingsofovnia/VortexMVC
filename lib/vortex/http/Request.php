@@ -200,12 +200,4 @@ class Request {
     public function getAction() {
         return $this->router->getAction();
     }
-
-    /**
-     * Returns an array of permission level for this action
-     * @return array array of int levels
-     */
-    public function getPermissions() {
-        return $this->router->getPermissions();
-    }
 }

@@ -6,101 +6,113 @@
  */
 
 namespace vortex\http;
-
 /**
  * Class Vortex_Session is a PHP Sessions wrapper with namespaces
  */
 class Session {
-    const GLOBAL_SCOPE = 0;
-    const NAMESPACE_PREFIX = '__';
+    const GLOBAL_NAMESPACE = '-1';
+    private static $_isStarted = false;
 
-    private static $isStarted = false;
-    private $namespace;
+    private static $_instances = array();
 
+    private $_namespace;
     private $autoDelete = false;
 
-    /**
-     * Constructs a namespaced session
-     * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
-     */
-    public function __construct($namespace = Session::GLOBAL_SCOPE) {
-        $this->setNameSpace($namespace);
+    private function __construct($namespace) {
+        $this->setNamespace($namespace);
+        self::$_instances[$namespace] = $this;
     }
 
     /**
-     * Destroys all values from session, with current namespace
-     * WARNING! If isGlobalNamespace() === true, than ALL values, from ALL namespaces will be destroyed!
-     * @return bool false, if no values were set, otherwise - true;
+     * Session factory
+     * @param string $namespace session's namespace
+     * @return Session a session object
      */
-    public function destroy() {
-        if ($this->isGlobalNamespace())
-            self::destroyAll();
+    public static function getSession($namespace = Session::GLOBAL_NAMESPACE) {
+        if (isset(self::$_instances[$namespace]))
+            return self::$_instances[$namespace];
+        return new Session($namespace);
+    }
 
-        $namespace = self::NAMESPACE_PREFIX . $this->namespace;
+    /**
+     * Checks if session has been started already
+     * @return bool if session is started, false - if not
+     */
+    private static function isStarted() {
+        return self::$_isStarted;
+    }
 
-        if (!isset($_SESSION[$namespace]))
+    /**
+     * Starts a session
+     * @throws SessionException if headers have been already sent
+     */
+    private static function start() {
+        if (self::isStarted())
+            return;
+        if (headers_sent())
+            throw new SessionException('Can\'t start session coz headers have been already started!');
+        session_start();
+        self::$_isStarted = true;
+    }
+
+    /**
+     * Cleans a namespaced session
+     * @return bool result OK-true, false - session even is not started
+     * @throws SessionException
+     */
+    public function clean() {
+        if (!self::isStarted())
             return false;
 
-        unset($_SESSION[$namespace]);
+        if (!isset($_SESSION[$this->getNamespace()]))
+            throw new SessionException("Session object is inconsistent!");
+
+        $_SESSION[$this->getNamespace()] = array();
         return true;
     }
 
     /**
-     * Checks if session namespace is global
-     * @return bool true if global
+     * Writes key-value pair or array values into Session
+     * @param string|array $key a key for key-value pair, or ASSOC array
+     * @param mixed $value a value
+     * @throws \InvalidArgumentException
      */
-    public function isGlobalNamespace() {
-        return $this->namespace == Session::GLOBAL_SCOPE;
-    }
+    public function set($key, $value = null) {
+        if (empty($key))
+            throw new \InvalidArgumentException('Param $key must be not empty value!');
 
-    /**
-     * Destroys all sessions and it's data
-     */
-    public static function destroyAll() {
-        $_SESSION = array();
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
+        if (!self::isStarted())
+            self::start();
+
+        $session = &$_SESSION[$this->getNamespace()];
+
+        if (is_array($key) && count(array_filter(array_keys($key), 'is_string')) == true) {
+            foreach ($key as $k => $v)
+                $session[$k] = $v;
+        } else {
+            $session[$key] = $value;
         }
-        session_destroy();
-        self::$isStarted = false;
     }
 
     /**
-     * Gets a name of session's namepsace
-     * @return string namespace
+     * Picks the data from Session
+     * @param string $key a key
+     * @return mixed a value
      */
-    public function getNameSpace() {
-        return $this->namespace;
-    }
+    public function get($key) {
+        if (!self::isStarted())
+            self::start();
 
-    /**
-     * Change current object's namespace
-     * @param string|int $namespace name of namespace (Vortex_Session::GLOBAL_SCOPE - global)
-     * @throws \InvalidArgumentException if name is empty
-     */
-    public function setNameSpace($namespace) {
-        if (empty($namespace) && $namespace != Session::GLOBAL_SCOPE)
-            throw new \InvalidArgumentException('Namespace should be not empty string or Vortex_Session::GLOBAL_SCOPE!');
-        $this->namespace = $namespace;
-        $_SESSION[$namespace] = array();
-    }
+        $session = &$_SESSION[$this->getNamespace()];
 
-    /**
-     * Enables auto deleting session values after reading
-     */
-    public function enableAutoDelete() {
-        $this->autoDelete = true;
-    }
+        if (isset($session[$key])) {
+            $return = $session[$key];
+            if ($this->autoDelete)
+                unset($session[$key]);
+            return $return;
+        }
 
-    /**
-     * Disables auto deleting session values after reading
-     */
-    public function disableAutoDelete() {
-        $this->autoDelete = false;
+        return null;
     }
 
     /**
@@ -122,77 +134,37 @@ class Session {
     }
 
     /**
-     * Picks the data from Session
-     * @param string $key a key
-     * @return mixed a value
+     * Gets a SESSION namespace name
+     * @return string namespace name
      */
-    public function get($key) {
-        if (!self::isstarted())
-            self::start();
-
-        if (!$this->isGlobalNamespace()) {
-            $namespace = self::NAMESPACE_PREFIX . $this->namespace;
-            $session = &$_SESSION[$namespace];
-        } else {
-            $session = &$_SESSION;
-        }
-
-        if (isset($session[$key])) {
-            $return = $session[$key];
-            if ($this->autoDelete)
-                unset($session[$key]);
-            return $return;
-        }
-
-        return null;
+    public function getNamespace() {
+        return $this->_namespace;
     }
 
     /**
-     * Checks if session has been started already
-     * @return bool if session is started, false - if not
+     * Sets a namespace of a SESSION obj
+     * @param string $namespace a session's namespace name
+     * @throws \InvalidArgumentException if param $namespace is empty
      */
-    public static function isStarted() {
-        return self::$isStarted;
+    private function setNamespace($namespace) {
+        if (empty($namespace))
+            throw new \InvalidArgumentException('Param $namespace should be not empty!');
+        $this->_namespace = $namespace;
+        $_SESSION[$namespace] = array();
     }
 
     /**
-     * Starts a session
-     * @throws SessionException if headers have been already sent
+     * Enables auto deleting session values after reading
      */
-    private static function start() {
-        if (self::isStarted())
-            return;
-        if (headers_sent())
-            throw new SessionException('Can\'t start session coz headers have been already started!');
-        session_start();
-        self::$isStarted = true;
+    public function enableAutoDelete() {
+        $this->autoDelete = true;
     }
 
     /**
-     * Writes key-value pair or array values into Session
-     * @param string|array $key a key for key-value pair, or ASSOC array
-     * @param mixed $value a value
-     * @throws \InvalidArgumentException
+     * Disables auto deleting session values after reading
      */
-    public function set($key, $value = null) {
-        if (empty($key))
-            throw new \InvalidArgumentException('Param $key must be not empty value!');
-
-        if (!self::isstarted())
-            self::start();
-
-        if (!$this->isGlobalNamespace()) {
-            $namespace = self::NAMESPACE_PREFIX . $this->namespace;
-            $session = &$_SESSION[$namespace];
-        } else {
-            $session = &$_SESSION;
-        }
-
-        if (is_array($key) && count(array_filter(array_keys($key), 'is_string')) == true) {
-            foreach ($key as $k => $v)
-                $session[$k] = $v;
-        } else {
-            $session[$key] = $value;
-        }
+    public function disableAutoDelete() {
+        $this->autoDelete = false;
     }
-} 
+
+}
