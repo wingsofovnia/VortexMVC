@@ -12,7 +12,7 @@ use vortex\mvc\view\View;
  * Class Widget is a simplified controller for a reusable widgets
  */
 abstract class AWidget {
-    const WIDGET_CONTROLLERS_NAMESPACE = 'Widgets';
+    const WIDGET_CONTROLLERS_NAMESPACE = 'widgets';
 
     /**
      * @var \ArrayObject
@@ -24,11 +24,12 @@ abstract class AWidget {
      * Inits Widget object with default view according to widget class name
      */
     public function __construct() {
-        $this->data = new \ArrayObject();
+        $this->data = new \ArrayObject(array(), \ArrayObject::ARRAY_AS_PROPS);
         $viewName = explode('\\', get_called_class());
         $viewName = array_pop($viewName);
         $viewName = strtolower(str_replace('Widget', '', $viewName));
         $this->view = View::factory($viewName);
+        $this->view->setData($this->data);
     }
 
     /**

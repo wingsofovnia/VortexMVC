@@ -24,7 +24,7 @@ class View {
      * Init constuctor
      */
     public function __construct() {
-        $this->data = new \ArrayObject();
+        $this->data = new \ArrayObject(array(), \ArrayObject::ARRAY_AS_PROPS);
         $this->scripts = APPLICATION_PATH . '/views/' . View::VIEW_SCRIPTS_FOLDER . '/';
     }
 
@@ -87,13 +87,13 @@ class View {
     /**
      * Renders an widget
      * @param string $widget a widget name
-     * @throws \Vortex\Exceptions\ViewException
+     * @throws ViewException
      * @internal param array $data additional data
      * @return string rendered widget
      */
     public function widget($widget) {
         $widget = ucfirst(strtolower($widget));
-        $widget = 'Application\Controllers\\' . AWidget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
+        $widget = 'application\controllers\\' . AWidget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
 
@@ -105,7 +105,7 @@ class View {
 
     /**
      * Renders the whole view
-     * @throws \Vortex\Exceptions\ViewException
+     * @throws ViewException
      * @return string rendered view
      */
     public function render() {
@@ -136,4 +136,22 @@ class View {
     public function isRenderable() {
         return !$this->noRender;
     }
+
+    /**
+     * @return \ArrayObject
+     */
+    public function getData() {
+        return $this->data;
+    }
+
+    /**
+     * @param \ArrayObject $data
+     * @throws \InvalidArgumentException if param $data is empty
+     */
+    public function setData($data) {
+        if (empty($data))
+            throw new \InvalidArgumentException('Param $data should be not empty!');
+        $this->data = $data;
+    }
+
 }

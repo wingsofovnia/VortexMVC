@@ -10,7 +10,7 @@ namespace application\controllers\widgets;
 
 use vortex\mvc\controller\AWidget;
 
-class TestAWidget extends AWidget {
+class TestWidget extends AWidget {
 
     /**
      * Processes a widget's logic
