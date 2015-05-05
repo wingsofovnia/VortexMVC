@@ -6,6 +6,11 @@
  */
 
 namespace vortex;
+use vortex\backbone\Bootstrap;
+use vortex\backbone\vertebrae\MVCVertebra;
+use vortex\backbone\vertebrae\RouterVertebra;
+use vortex\http\Request;
+use vortex\http\Response;
 use vortex\utils\Logger;
 
 /**
@@ -15,20 +20,24 @@ use vortex\utils\Logger;
  * starts particular controller's action.
  */
 class Application {
-    const BOOTSTRAP_CLASS = 'application\Bootstrap';
     /**
      * Runs the application
      */
     public static function run() {
         Application::registerClassLoader();
         Application::registerHandlers();
+        $httpRequest = new Request();
+        $httpResponse = new Response();
 
-        /* Running bootstrap */
-        if (class_exists(Application::BOOTSTRAP_CLASS)) {
-            $cls = Application::BOOTSTRAP_CLASS;
-            $bootstrap = new $cls();
-            $bootstrap->process();
-        }
+        /* Running backbone */
+        $backboneBootstrap = new Bootstrap($httpRequest, $httpResponse);
+
+        /* Registered vertebrae */
+        $backboneBootstrap->addVertebra(new RouterVertebra());
+        $backboneBootstrap->addVertebra(new MVCVertebra());
+        $backboneBootstrap->run();
+
+        $httpResponse->send();
     }
 
     /**

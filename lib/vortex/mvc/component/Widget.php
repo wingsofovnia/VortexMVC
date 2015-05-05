@@ -5,13 +5,13 @@
  * Date: 19-May-14
  */
 
-namespace vortex\mvc\controller;
+namespace vortex\mvc\component;
 use vortex\mvc\view\View;
 
 /**
  * Class Widget is a simplified controller for a reusable widgets
  */
-abstract class AWidget {
+abstract class Widget {
     const WIDGET_CONTROLLERS_NAMESPACE = 'widgets';
 
     /**
@@ -35,7 +35,7 @@ abstract class AWidget {
     /**
      * Processes a widget's logic
      */
-    public abstract function render();
+    public abstract function draw();
 
     /**
      * Gets a View object

@@ -141,8 +141,8 @@ class Response {
      * Sets a body of a http packet
      * @param string $body a body value
      */
-    public function setBody($body) {
-        $this->body = (string)$body;
+    public function appendBody($body) {
+        $this->body = $this->body . (string)$body;
     }
 
     /**

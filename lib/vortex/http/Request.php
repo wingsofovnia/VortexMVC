@@ -6,8 +6,6 @@
  */
 
 namespace vortex\http;
-use vortex\mvc\Router;
-use vortex\utils\Logger;
 
 /**
  * Class Vortex_Request implements a wrapper of HTTP Request with additional,
@@ -17,10 +15,11 @@ class Request {
     private $get;
     private $post;
     private $cookies;
-    private $params;
     private $method;
 
-    private $router;
+    private $controller;
+    private $action;
+    private $params;
 
     /**
      * Init constructor
@@ -36,10 +35,7 @@ class Request {
         $this->cookies = $_COOKIE;
 
         $this->method = $_SERVER['REQUEST_METHOD'];
-
-        $this->router = new Router($this);
-        $this->router->parse();
-        $this->params = new \ArrayObject($this->router->getParams());
+        $this->params = new \ArrayObject(array(), \ArrayObject::STD_PROP_LIST | \ArrayObject::ARRAY_AS_PROPS);
     }
 
     /**
@@ -178,19 +174,33 @@ class Request {
     }
 
     /**
-     * Gets cleaned REQUEST_URI
-     * @return string a request url
-     */
-    public function getRequestUrl() {
-        return $this->router->getUrl();
-    }
-
-    /**
      * Gets a name of controller parsed from url
      * @return string controller's name
      */
     public function getController() {
-        return $this->router->getController();
+        return $this->controller;
+    }
+
+    /**
+     * Sets a name of controller
+     * @param string $controller
+     * @throws \InvalidArgumentException if param $controller is empty
+     */
+    public function setController($controller) {
+        if (empty($controller))
+            throw new \InvalidArgumentException('Param $controller should be not empty!');
+        $this->controller = $controller;
+    }
+
+    /**
+     * Sets a name of action
+     * @param string $action
+     * @throws \InvalidArgumentException if param $action is empty
+     */
+    public function setAction($action) {
+        if (empty($action))
+            throw new \InvalidArgumentException('Param $action should be not empty!');
+        $this->action = $action;
     }
 
     /**
@@ -198,6 +208,6 @@ class Request {
      * @return string action's name
      */
     public function getAction() {
-        return $this->router->getAction();
+        return $this->action;
     }
 }

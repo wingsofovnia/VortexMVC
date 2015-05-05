@@ -12,26 +12,27 @@ use vortex\utils\Config;
  * Class Layout
  */
 class Layout extends View {
-    const LAYOUT_SCRIPTS_FOLDER = 'layouts';
+    const LAYOUT_SCRIPTS_FOLDER = '/views/layouts/';
 
-    private $view;
+    private $content;
     private $isLayout;
     private $layouts = array();
     private $currentLayout;
 
     /**
      * Wraps a view with layout
-     * @param View $view a content view
+     * @param View|string $content a content
      * @throws \UnexpectedValueException
      * @throws \InvalidArgumentException
      * @internal param string $name a name of a view template
      */
-    public function __construct($view) {
-        if (!($view instanceof View))
-            throw new \InvalidArgumentException('Argument $view is not an instance of Vortex\View');
-        $this->view = $view;
+    public function __construct($content) {
+        if ($content instanceof View)
+            $content = $content->render();
 
-        $this->scripts = APPLICATION_PATH . '/views/' . Layout::LAYOUT_SCRIPTS_FOLDER . '/';
+        $this->content = $content;
+
+        $this->scripts = APPLICATION_PATH . Layout::LAYOUT_SCRIPTS_FOLDER;
 
         $config = Config::getInstance();
         $this->isLayout = $config->view->layout->enabled(false);
@@ -40,7 +41,7 @@ class Layout extends View {
             $templates = $config->view->layout->templates;
 
             for ($i = 0; $i < count($templates); $i++) {
-                $layout = $this->getScriptPath($templates[$i]);
+                $layout = $this->getTemplatePath($templates[$i]);
 
                 if (file_exists($layout))
                     $this->layouts[] = $templates[$i];
@@ -51,9 +52,6 @@ class Layout extends View {
 
             $this->setCurrentLayout($config->view->layout->default);
         }
-
-        if (!$this->view->isRenderable())
-            $this->disableLayout();
     }
 
     /**
@@ -75,12 +73,8 @@ class Layout extends View {
      * @return string layout content
      */
     public function render() {
-        if (!$this->isEnabled())
-            return $this->view->isRenderable() ? $this->content() : null;
-        else {
-            $path = $this->getScriptPath($this->getCurrentLayout());
-            return $this->ob_include($path);
-        }
+        $path = $this->getTemplatePath($this->getCurrentLayout());
+        return $this->ob_include($path);
     }
 
     /**
@@ -96,7 +90,7 @@ class Layout extends View {
      * @return string a view content
      */
     public function content() {
-        return $this->view->render();
+        return $this->content;
     }
 
     /**

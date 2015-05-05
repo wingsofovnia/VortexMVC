@@ -7,17 +7,13 @@
 
 namespace application\controllers;
 
-use vortex\mvc\controller\AController;
+use vortex\mvc\controller\Controller;
+use vortex\mvc\view\View;
 
-class IndexController extends AController {
-    public function indexAction() {
-        //$this->response->setHeader('Content-Type', 'text/plain');
-        $this->view->data->firstWords = 'Hello World! It\'s a indexAction!';
-        $this->view->setTemplate('index/index');
-    }
-
-    public function indexPOSTAction() {
-        $this->view->setTemplate('index/index');
-        $this->view->data->firstWords = 'Hello World!  It\'s a indexPOSTAction!';
+class IndexController extends Controller {
+    public function index() {
+        $view = View::factory('index/index');
+        $view->data->firstWords = 'Hello World! It\'s a indexAction!';
+        return $view;
     }
 }

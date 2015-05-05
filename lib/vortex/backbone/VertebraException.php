@@ -5,9 +5,9 @@
  * Date: 19-May-14
  */
 
-namespace vortex\mvc\controller;
+namespace vortex\backbone;
 
 /**
  * Class FrontException represents errors in FrontController
  */
-class FrontException extends \RuntimeException {}
+class VertebraException extends \RuntimeException {}

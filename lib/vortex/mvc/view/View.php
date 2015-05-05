@@ -6,26 +6,26 @@
  */
 
 namespace vortex\mvc\view;
-use vortex\mvc\Controller\AWidget;
+use vortex\component\Widget;
 use vortex\utils\Config;
+use vortex\utils\Logger;
 
 /**
  * Class View
  * This class is responsible for web application view
  */
 class View {
-    const VIEW_SCRIPTS_FOLDER = 'templates';
+    const VIEW_SCRIPTS_FOLDER = '/views/templates/';
     public $data;
     protected $path;
     protected $scripts;
-    private $noRender = false;
 
     /**
      * Init constuctor
      */
     public function __construct() {
         $this->data = new \ArrayObject(array(), \ArrayObject::ARRAY_AS_PROPS);
-        $this->scripts = APPLICATION_PATH . '/views/' . View::VIEW_SCRIPTS_FOLDER . '/';
+        $this->scripts = APPLICATION_PATH . View::VIEW_SCRIPTS_FOLDER;
     }
 
     /**
@@ -46,11 +46,11 @@ class View {
      * @return View a new view object
      */
     public function setTemplate($template) {
-        $script = $this->getScriptPath(strtolower($template));
+        $script = $this->getTemplatePath(strtolower($template));
         $this->path = $script;
     }
 
-    protected function getScriptPath($view) {
+    protected function getTemplatePath($view) {
         $extension = Config::getInstance()->view->extension('tpl');
         return $this->scripts . $view . '.' . $extension;
     }
@@ -63,7 +63,7 @@ class View {
      * @throws ViewException if partial doesn't exist
      */
     public function partial($view, $data = array()) {
-        $path = $this->getScriptPath($view);
+        $path = $this->getTemplatePath($view);
 
         if (!is_file($path))
             throw new ViewException('Partial #{' . $path . '} doesn\'t exist!');
@@ -80,8 +80,10 @@ class View {
      */
     protected function ob_include($target) {
         ob_start();
-        @include (string)$target;
-        return ob_get_clean();
+        include $target;
+        $contents = ob_get_contents();
+        ob_end_clean();
+        return $contents;
     }
 
     /**
@@ -93,13 +95,12 @@ class View {
      */
     public function widget($widget) {
         $widget = ucfirst(strtolower($widget));
-        $widget = 'application\controllers\\' . AWidget::WIDGET_CONTROLLERS_NAMESPACE . '\\' . $widget . 'Widget';
+        $widget = 'application\controllers\\widgets\\' . $widget . 'Widget';
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
-
-        /** @var $widgetObj AWidget */
+        /** @var $widgetObj Widget */
         $widgetObj = new $widget();
-        $widgetObj->render();
+        $widgetObj->draw();
         return $widgetObj->getView()->render();
     }
 
@@ -113,28 +114,6 @@ class View {
             throw new ViewException('View #{' . $this->path . '} don\'t exists!');
 
         return $this->ob_include($this->path);
-    }
-
-    /**
-     * Enables rendering of view
-     */
-    public function enableRendering() {
-        $this->noRender = false;
-    }
-
-    /**
-     * Disables rendering of view
-     */
-    public function disableRendering() {
-        $this->noRender = true;
-    }
-
-    /**
-     * Checks if noRender enabled
-     * @return bool true, if noRender == false
-     */
-    public function isRenderable() {
-        return !$this->noRender;
     }
 
     /**

@@ -7,11 +7,10 @@
 
 namespace application\controllers;
 
-use vortex\mvc\controller\AController;
+use vortex\mvc\controller\Controller;
 
-class ErrorController extends AController {
-    public function indexAction() {
-        $this->view->data->code = $this->request->getParam('code');
+class ErrorController extends Controller {
+    public function index() {
         $this->view->data->message = $this->request->getParam('message');
     }
 }

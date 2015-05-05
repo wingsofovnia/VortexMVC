@@ -8,14 +8,14 @@
 
 namespace application\controllers\widgets;
 
-use vortex\mvc\controller\AWidget;
+use vortex\mvc\component\Widget;
 
-class TestWidget extends AWidget {
+class TestWidget extends Widget {
 
     /**
      * Processes a widget's logic
      */
-    public function render() {
+    public function draw() {
         $this->data->text = "Awesome box!";
     }
 }
