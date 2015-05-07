@@ -5,14 +5,14 @@
  * Date: 11-Jun-14
  */
 
-namespace vortex\cache\drivers;
+namespace vortex\storage\drivers;
 
-use vortex\cache\ICache;
+use vortex\storage\StorageInterface;
 
 /**
  * Interface for cache backend
  */
-interface ICacheBackend extends ICache {
+interface StorageDriverInterface extends StorageInterface {
     const DEFAULT_LIFE_TIME = 300;
     const DEFAULT_NAMESPACE = 'vf';
 

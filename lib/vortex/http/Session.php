@@ -116,6 +116,25 @@ class Session {
     }
 
     /**
+     * Removes value by key
+     * @param string $key a key
+     * @return bool|mixed false, or previous value
+     */
+    public function remove($key) {
+        if (!self::isStarted())
+            self::start();
+
+        $session = &$_SESSION[$this->getNamespace()];
+        if (isset($session[$key])) {
+            $val = $session[$key];
+            unset($session[$key]);
+            return $val;
+        }
+
+        return false;
+    }
+
+    /**
      * Magic alias of $this->get(k);
      * @param string $key a key
      * @return mixed a value

@@ -5,17 +5,19 @@
  * Date: 11-Jun-14
  */
 
-namespace vortex\cache;
+namespace vortex\storage;
 
-use vortex\cache\drivers\ICacheBackend;
+
 use vortex\utils\Config;
 use vortex\utils\Logger;
 
 /**
  * Class CacheFactory builds a cache object
  */
-abstract class ACacheFactory {
-    const FILE_DRIVER = 'FileBackend';
+abstract class StorageFactory {
+    const STORAGE_DRIVER_INTERFACE = "vortex\\storage\\drivers\\StorageDriverInterface";
+    const FILE_DRIVER = 'vortex\\storage\\drivers\\FileStorageDriver';
+    const SESSION_DRIVER = 'vortex\\storage\\drivers\\SessionStorageDriver';
 
     public static $masterSwitch;
 
@@ -23,8 +25,8 @@ abstract class ACacheFactory {
      * Constructs a cache object based on specific adapter and it's options
      * @param string $driver driver name (use const of this class)
      * @param array $options options
-     * @return ICache configured cache object
-     * @throws CacheException if error occupied
+     * @return StorageInterface configured cache object
+     * @throws StorageException if error occupied
 
      * @deprecated
      */
@@ -36,35 +38,23 @@ abstract class ACacheFactory {
      * Constructs a cache object based on specific adapter and it's options
      * @param string $driver driver name (use const of this class)
      * @param array $options options
-     * @throws CacheException
-     * @return ICache configured cache object
+     * @throws StorageException
+     * @return StorageInterface configured cache object
      */
     public static function build($driver, $options = array()) {
-        $driver = 'vortex\cache\drivers\\' . $driver;
-
         if (!class_exists($driver))
-            throw new CacheException('Driver <' . $driver . '> is not a class!');
+            throw new StorageException('Driver <' . $driver . '> dosnt\'t exist!');
 
         $interfaces = class_implements($driver);
-        if (!isset($interfaces['vortex\cache\drivers\ICacheBackend']))
-            throw new CacheException('Driver is not an instance of CacheBackend interface!');
-
-        if (!isset($options['lifetime'])) {
-            $options['lifetime'] = ICacheBackend::DEFAULT_LIFE_TIME;
-            Logger::warning('Lifetime was not specified. Using CacheBackend::DEFAULT_LIFE_TIME instead!');
-        }
-
-        if (!isset($options['namespace'])) {
-            $options['namespace'] = ICacheBackend::DEFAULT_NAMESPACE;
-            Logger::warning('Namespace was not specified. Using CacheBackend::DEFAULT_NAMEPSACE instead!');
-        }
+        if (!isset($interfaces[self::STORAGE_DRIVER_INTERFACE]))
+            throw new StorageException('Driver is not an instance of ' . self::STORAGE_DRIVER_INTERFACE . ' interface!');
 
         $options['masterSwitch'] = self::$masterSwitch;
         if (!$options['masterSwitch'])
             Logger::warning("Warning! Global cache switch: " . $options['masterSwitch'] . '! Nothing will be cached!');
 
 
-        /** @var $cacheObject \vortex\cache\drivers\ICacheBackend */
+        /** @var $cacheObject \vortex\storage\drivers\StorageDriverInterface */
         $cacheObject = new $driver();
         $cacheObject->config($options);
         $cacheObject->check();
@@ -73,4 +63,4 @@ abstract class ACacheFactory {
     }
 }
 
-ACacheFactory::$masterSwitch = Config::getInstance()->cache->enabled(true);
+StorageFactory::$masterSwitch = Config::getInstance()->cache->enabled(true);

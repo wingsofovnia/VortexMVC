@@ -5,7 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace vortex\mvc\model;
+namespace vortex\database;
 
 /**
  * Class DatabaseException represents errors in Database

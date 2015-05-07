@@ -5,9 +5,9 @@
  * Date: 19-May-14
  */
 
-namespace vortex\cache;
+namespace vortex\storage;
 
 /**
  * Class CacheException represents errors in caching
  */
-class CacheException extends \RuntimeException {}
+class StorageException extends \RuntimeException {}

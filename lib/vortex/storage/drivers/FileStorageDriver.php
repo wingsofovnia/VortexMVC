@@ -5,16 +5,16 @@
  * Date: 11-Jun-14
  */
 
-namespace vortex\cache\drivers;
+namespace vortex\storage\drivers;
 
-use vortex\cache\CacheException;
-use vortex\cache\ICache;
+use vortex\storage\StorageException;
+use vortex\storage\StorageInterface;
 use vortex\utils\Logger;
 
 /**
  * Class implements a File caching Adapter
  */
-class FileBackend implements ICacheBackend {
+class FileStorageDriver implements StorageDriverInterface {
     private $namespace;
     private $defaultLifetime;
     private $cacheExtension;
@@ -26,7 +26,7 @@ class FileBackend implements ICacheBackend {
         $path = $this->getPath();
         if (!file_exists($path)) {
             if (!@mkdir($path, 0777)) {
-                throw new CacheException("Please CHMOD " . $this->getPath() . " - 0777 or any writable permission!", 92);
+                throw new StorageException("Please CHMOD " . $this->getPath() . " - 0777 or any writable permission!", 92);
             }
         } elseif (!is_writeable($path)) {
             @chmod($path, 0777);
@@ -78,7 +78,7 @@ class FileBackend implements ICacheBackend {
             return false;
         }
 
-        if (time() - filemtime($path) > $data['lifetime'] && $data['lifetime'] != ICache::UNLIMITED_LIFE_TIME) {
+        if (time() - filemtime($path) > $data['lifetime'] && $data['lifetime'] != StorageInterface::UNLIMITED_LIFE_TIME) {
             Logger::debug('Cache file id = #' . $id . ' old and was deleted!');
             $this->delete($id);
             return false;

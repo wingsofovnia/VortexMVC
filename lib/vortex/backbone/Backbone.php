@@ -12,7 +12,7 @@ namespace vortex\backbone;
 use vortex\http\Request;
 use vortex\http\Response;
 
-class Bootstrap {
+class Backbone {
     private $vertebrae = array();
     private $request;
     private $response;

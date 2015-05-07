@@ -9,8 +9,8 @@ namespace vortex\utils;
 
 use ArrayObject;
 use IniParser;
-use vortex\cache\ACacheFactory;
-use vortex\cache\ICache;
+use vortex\storage\StorageFactory;
+use vortex\storage\StorageInterface;
 
 require 'IniParser.php';
 
@@ -47,9 +47,9 @@ class Config extends IniParser {
         parent::__construct($file);
 
         /* Caching configs... */
-        $cache = ACacheFactory::build(ACacheFactory::FILE_DRIVER, array(
+        $cache = StorageFactory::build(StorageFactory::FILE_DRIVER, array(
             'namespace' => Config::CACHE_TAG,
-            'lifetime' => ICache::UNLIMITED_LIFE_TIME
+            'lifetime' => StorageInterface::UNLIMITED_LIFE_TIME
         ));
 
         $configCacheId = md5($file);

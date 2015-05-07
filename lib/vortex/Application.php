@@ -6,7 +6,8 @@
  */
 
 namespace vortex;
-use vortex\backbone\Bootstrap;
+use vortex\backbone\Backbone;
+use vortex\backbone\vertebrae\FacadeVertebra;
 use vortex\backbone\vertebrae\MVCVertebra;
 use vortex\backbone\vertebrae\RouterVertebra;
 use vortex\http\Request;
@@ -30,9 +31,10 @@ class Application {
         $httpResponse = new Response();
 
         /* Running backbone */
-        $backboneBootstrap = new Bootstrap($httpRequest, $httpResponse);
+        $backboneBootstrap = new Backbone($httpRequest, $httpResponse);
 
         /* Registered vertebrae */
+        $backboneBootstrap->addVertebra(new FacadeVertebra());
         $backboneBootstrap->addVertebra(new RouterVertebra());
         $backboneBootstrap->addVertebra(new MVCVertebra());
         $backboneBootstrap->run();

@@ -14,6 +14,7 @@ use vortex\http\Request;
 use vortex\http\Response;
 use vortex\mvc\controller\Controller;
 use vortex\mvc\view\Layout;
+use vortex\mvc\view\View;
 use vortex\utils\Config;
 
 class MVCVertebra implements VertebraInterface {
@@ -45,7 +46,8 @@ class MVCVertebra implements VertebraInterface {
 
         $controller->init();
         $actionResponse = $controller->$actionMethod();
-        $actionResponse = $actionResponse->render();
+        if ($actionResponse instanceof View)
+            $actionResponse = $actionResponse->render();
 
         if (Config::getInstance()->view->layout->enabled(false)) {
             $actionResponse = new Layout($actionResponse);
