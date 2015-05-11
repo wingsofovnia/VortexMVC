@@ -10,9 +10,8 @@ namespace vortex\auth;
 
 
 use vortex\database\ConnectionInterface;
+use vortex\database\PDOConnection;
 use vortex\hashing\HasherInterface;
-use vortex\mvc\model\PDOConnection;
-use vortex\utils\Logger;
 
 class DatabaseUserProvider implements UserProviderInterface {
     /**
@@ -25,8 +24,6 @@ class DatabaseUserProvider implements UserProviderInterface {
      * The hasher implementation.
      *
      * @var HasherInterface
-     */
-    protected $hasher;
 
     /**
      * The table containing the users.
@@ -42,48 +39,49 @@ class DatabaseUserProvider implements UserProviderInterface {
      * Create a new database user provider.
      *
      * @param \vortex\database\ConnectionInterface $conn
-     * @param \vortex\hashing\HasherInterface $hasher
      * @param  string $table
      * @param $idColumn
      * @param $passColumn
+     * @internal param \vortex\hashing\HasherInterface $hasher
      * @return \vortex\auth\DatabaseUserProvider
      */
-    public function __construct(ConnectionInterface $conn, HasherInterface $hasher, $table, $idColumn, $passColumn) {
+    public function __construct(ConnectionInterface $conn, $table, $idColumn, $passColumn) {
         $this->conn = $conn;
         $this->table = $table;
-        $this->hasher = $hasher;
         $this->idColumn = $idColumn;
         $this->passColumn = $passColumn;
     }
 
 
-    public function retrieveById($identifier) {
-        $assoc = $this->conn->first("SELECT * FROM " . $this->table . " WHERE " . $this->idColumn . " = :value",
-                     array(':value' => $identifier));
+    public function retrieveBy(array $options) {
+        if (empty($options))
+            throw new \InvalidArgumentException("empty options");
+
+        $query = "SELECT * FROM " . $this->table . " WHERE ";
+        $params = array();
+        foreach ($options as $k => $v) {
+            $param = ':' . $k;
+            $params[] = array($param, $v);
+
+            $query .= $k . ' = ' . $param;
+            $query .= ' AND ';
+        }
+        $query = rtrim($query, ' AND ');
+
+        $assoc = $this->conn->first($query, $params);
+
         if (!$assoc)
             return false;
         return new GenericUser($assoc);
     }
 
-    public function retrieveByCredentials(array $credentials) {
-        $id = key($credentials);
-        $pass = current($credentials);
+    public function retrieveByCredentials($identity, $password) {
         $assoc = $this->conn->first("SELECT * FROM " . $this->table . " WHERE " . $this->idColumn . " = :id AND " . $this->passColumn . " = :password",
-                     array(':id'       => $id,
-                           ':password' => $pass));
+                     array(':id'       => $identity,
+                           ':password' => $password));
         if (!$assoc)
             return false;
         return new GenericUser($assoc);
     }
 
-    public function validateCredentials(UserInterface $user, array $credentials) {
-        $id = key($credentials);
-        $pass = current($credentials);
-        $assoc = $this->conn->first("SELECT * FROM " . $this->table . " WHERE " . $this->idColumn . " = :id AND " . $this->passColumn . " = :password",
-                     array(':id'       => $id,
-                           ':password' => $pass));
-        if (!$assoc)
-            return false;
-        return new $user->getAuthIdentifier() == $assoc[$this->idColumn] && $user->getAuthPassword() == $assoc[$this->passColumn];
-    }
 }

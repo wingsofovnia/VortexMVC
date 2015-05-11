@@ -10,7 +10,6 @@ namespace vortex\auth;
 
 
 interface UserProviderInterface {
-    public function retrieveById($identifier);
-    public function retrieveByCredentials(array $credentials);
-    public function validateCredentials(UserInterface $user, array $credential);
+    public function retrieveBy(array $options);
+    public function retrieveByCredentials($identity, $password);
 } 

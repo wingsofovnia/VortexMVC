@@ -9,6 +9,8 @@
 namespace vortex\auth;
 
 
+use vortex\hashing\GenericHasher;
+use vortex\hashing\HasherInterface;
 use vortex\storage\StorageInterface;
 
 class AuthManager {
@@ -19,11 +21,16 @@ class AuthManager {
      */
     private $storage;
     private $provider;
+    private $hasher;
     private $user;
 
-    public function __construct(StorageInterface $storage, UserProviderInterface $provider) {
+    public function __construct(StorageInterface $storage, UserProviderInterface $provider, HasherInterface $hasher = null) {
+        if (!$hasher)
+            $hasher = new GenericHasher();
+
         $this->storage = $storage;
         $this->provider = $provider;
+        $this->hasher = $hasher;
 
         $this->init();
     }
@@ -48,8 +55,10 @@ class AuthManager {
         return $this->user->getAuthIdentifier();
     }
 
-    public function login(array $credentials = []) {
-        $result = $this->provider->retrieveByCredentials($credentials);
+    public function login($identity, $password) {
+        $identity = (string) $identity;
+        $hash = $this->hasher->make($password);
+        $result = $this->provider->retrieveByCredentials($identity, $hash);
         if (!$result)
             return false;
         $this->user = $result;
