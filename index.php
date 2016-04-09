@@ -19,6 +19,7 @@ define('APP_CONTROLLER_POSTFIX', 'Controller');
 
 require_once LIB_PATH . '/vortex/Application.php';
 use vortex\Application;
+
 Application::init();
 Application::dispatch();
 Application::display();

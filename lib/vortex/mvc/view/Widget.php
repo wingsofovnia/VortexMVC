@@ -5,11 +5,11 @@
  * Date: 19-May-14
  */
 
-namespace vortex\mvc\controller;
-use vortex\mvc\view\View;
+namespace vortex\mvc\view;
 
 /**
- * Class Widget is a simplified controller for a reusable widgets
+ * Class Widget is a simplified controller for a reusable View widgets
+ * @package vortex\mvc\view
  */
 abstract class Widget {
     /**
@@ -22,7 +22,7 @@ abstract class Widget {
     }
 
     /**
-     * Draws a widget
+     * Renders a widget
      * @return View a widget's view
      */
     public abstract function draw();

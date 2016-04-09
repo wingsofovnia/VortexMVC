@@ -8,6 +8,7 @@
 namespace vortex\mvc\view;
 
 /**
- * Class ViewException represents errors in View and associated with MVC objects
+ * Class ViewException represents errors in Views and Widgets
+ * @package vortex\mvc\view
  */
 class ViewException extends \RuntimeException {}

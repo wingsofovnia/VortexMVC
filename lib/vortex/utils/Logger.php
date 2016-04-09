@@ -8,7 +8,8 @@
 namespace vortex\utils;
 
 /**
- * Class Vortex_Logger is a simple logger implementation
+ * Class Logger is a simple logging framework for more informative and level-based logging.
+ * @package vortex\utils
  */
 class Logger {
     const EXCEPTION = -1;

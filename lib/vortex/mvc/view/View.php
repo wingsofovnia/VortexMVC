@@ -6,12 +6,10 @@
  */
 
 namespace vortex\mvc\view;
-use vortex\mvc\controller\Widget;
-use vortex\utils\Config;
 
 /**
- * Class View
- * This class is responsible for web application view
+ * Class View is responsible for web application view
+ * @package vortex\mvc\view
  */
 class View {
     const TEMPLATE_POSTFIX = 'tpl';
@@ -19,9 +17,6 @@ class View {
     public $data;
     protected $template;
 
-    /**
-     * Init constructor
-     */
     public function __construct() {
         $this->data = new \ArrayObject(array(), \ArrayObject::ARRAY_AS_PROPS);
     }
@@ -47,6 +42,11 @@ class View {
         $this->template = $this->locateTemplate($template);
     }
 
+    /**
+     * Finds absolute path to template script
+     * @param string $template tpl name
+     * @return string absolute path
+     */
     protected function locateTemplate($template) {
         return APP_TEMPLATES_PATH . DIRECTORY_SEPARATOR . strtolower($template) . '.' . View::TEMPLATE_POSTFIX;
     }
@@ -114,17 +114,10 @@ class View {
         return $this->ob_include($this->template);
     }
 
-    /**
-     * @return \ArrayObject
-     */
     public function getData() {
         return $this->data;
     }
 
-    /**
-     * @param \ArrayObject $data
-     * @throws \InvalidArgumentException if param $data is empty
-     */
     public function setData($data) {
         if (empty($data))
             throw new \InvalidArgumentException('Param $data should be not empty!');

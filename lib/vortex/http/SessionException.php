@@ -9,5 +9,6 @@ namespace vortex\http;
 
 /**
  * Class SessionException represents errors in Session object
+ * @package vortex\http
  */
 class SessionException extends \RuntimeException { }

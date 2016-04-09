@@ -6,8 +6,10 @@
  */
 
 namespace vortex\http;
+
 /**
- * Class Vortex_Session is a PHP Sessions wrapper with namespaces
+ * Class Session is a PHP Sessions wrapper with namespaces support
+ * @package vortex\http
  */
 class Session {
     const GLOBAL_NAMESPACE = '-1';

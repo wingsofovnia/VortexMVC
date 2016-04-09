@@ -9,8 +9,9 @@
 namespace vortex\http;
 
 /**
- * Class Vortex_Response implements a wrapper of HTTP Response PACKET with additional,
+ * Class Response implements a wrapper of HTTP Response PACKET with additional,
  * extended functionality
+ * @package vortex\http
  */
 class Response {
     /* Status codes */

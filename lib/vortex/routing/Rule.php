@@ -1,14 +1,17 @@
 <?php
 /**
- * Project: rework-vortex
- * Author: superuser
+ * Project: VortexMVC
+ * Author: Illia Ovchynnikov
  * Date: 09-Apr-16
  * Time: 18:21
  */
 
 namespace vortex\routing;
 
-
+/**
+ * Class Rule represents a routing record in Router's routing table
+ * @package vortex\routing
+ */
 class Rule {
     const HTTP_GET = "get";
     const HTTP_POST = "post";

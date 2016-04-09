@@ -8,8 +8,8 @@
 namespace vortex\utils;
 
 /**
- * Class Global
- * An implementation of Registry as a singleton in a global scope
+ * Class GlobalRegistry is a global Registry for storing data over the application
+ * @package vortex\utils
  */
 class GlobalRegistry {
     private $registry;

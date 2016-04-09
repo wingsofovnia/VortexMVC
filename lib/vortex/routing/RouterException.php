@@ -8,6 +8,7 @@
 namespace vortex\routing;
 
 /**
- * Class ResponseException represents errors in Response object
+ * Class RouterException represents errors in routing
+ * @package vortex\routing
  */
 class RouterException extends \Exception {}

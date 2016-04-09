@@ -15,8 +15,18 @@ use vortex\storage\StorageInterface;
 require 'IniParser.php';
 
 /**
- * Class Vortex_Config
- * This class parses application ini settings file into OM
+ * Class Config parses application configurations file application.ini and represents
+ * settings in a object-oriented manner.
+ *
+ * Supports section inheritance, property nesting, simple arrays and optional default values:
+ * application.ini:
+ * mysection.my_prop=12
+ *
+ * Code:
+ * Config::getInstance()->mysection->my_prop('default-value'); // -> default-value
+ * Config::getInstance()->mysection->my_prop('default-value'); // -> 12
+ *
+ * @package vortex\utils
  */
 class Config extends IniParser {
     const APPLICATION_SETTINGS_FILE = '/application.ini';

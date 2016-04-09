@@ -6,18 +6,20 @@
  */
 
 namespace vortex\http;
+use vortex\routing\Route;
 use vortex\utils\Config;
 
 /**
- * Class Vortex_Request implements a wrapper of HTTP Request with additional,
+ * Class Request implements a wrapper of HTTP Request with additional,
  * extended functionality
+ * @package vortex\http
  */
 class Request {
+    private $route;
     private $get;
     private $post;
     private $cookies;
     private $method;
-    private $params;
 
     /**
      * Init constructor
@@ -33,25 +35,25 @@ class Request {
         $this->cookies = $_COOKIE;
 
         $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->params = new \ArrayObject(array(), \ArrayObject::STD_PROP_LIST | \ArrayObject::ARRAY_AS_PROPS);
     }
 
     /**
-     * Adds an array of key-value pairs to storage
-     * @param $params
+     * Sets a Route information from Router
+     * @param Route $route
+     * @throws \InvalidArgumentException if param $route is empty
      */
-    public function addParams($params) {
-        foreach ($params as $k => $v)
-            $this->addParam($k, $v);
+    public function setRoute(Route $route) {
+        if (empty($route))
+            throw new \InvalidArgumentException('Param $route should be not empty!');
+
+        $this->route = $route;
     }
 
     /**
-     * Adds value to internal storage
-     * @param string $key a key
-     * @param mixed $value a value
+     * @return Route
      */
-    public function addParam($key, $value) {
-        $this->params->$key = $value;
+    public function getRoute() {
+        return $this->route;
     }
 
     /**
@@ -84,15 +86,6 @@ class Request {
         return isset($this->cookies[$key]) ? $this->cookies[$key] : $default;
     }
 
-    /**
-     * Gets a PARAM value by key
-     * @param string $key a key
-     * @param null|mixed $default value that will be settled, if no PARAM found
-     * @return string a PARAM value
-     */
-    public function getParam($key, $default = null) {
-        return !is_null($this->params->$key) ? $this->params->$key : $default;
-    }
 
     /**
      * Checks if request method is POST

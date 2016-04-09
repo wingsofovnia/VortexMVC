@@ -9,5 +9,6 @@ namespace vortex\http;
 
 /**
  * Class ResponseException represents errors in Response object
+ * @package vortex\http
  */
 class ResponseException extends \Exception {}

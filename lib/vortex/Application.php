@@ -1,35 +1,35 @@
 <?php
 /**
- * Project: rework-vortex
- * Author: superuser
+ * Project: VortexMVC
+ * Author: Illia Ovchynnikov
  * Date: 09-Apr-16
  * Time: 19:24
  */
 
 namespace vortex;
 
-
-use vortex;
 use vortex\http\Request;
 use vortex\http\Response;
 use vortex\mvc\Dispatcher;
 use vortex\routing\Route;
 use vortex\routing\Router;
 use vortex\utils\Logger;
+use vortex;
 
+/**
+ * Class Application is an entry point of VortexMVC that inits and boots it.
+ * @package vortex
+ */
 class Application {
     const ROUTES_FILE_NAME = 'routes.cfg';
 
     private static $httpRequest;
-    /**
-     * @var Response
-     */
     private static $httpResponse;
-    /**
-     * @var Router
-     */
     private static $router;
 
+    /**
+     * Initializes Application class loader, handlers, router and http Request & Response
+     */
     public static function init() {
         Application::registerClassLoader();
         Application::registerHandlers();
@@ -42,22 +42,30 @@ class Application {
         Application::$router->parseRules($routesFile, true);
     }
 
+    /**
+     * Routes request to Dispatcher
+     * @throws routing\RouterException if no route found
+     */
     public static function dispatch() {
         /** @var $route Route */
         $route = Application::$router->route(Application::$httpRequest);
         if ($route === NULL)
             throw new vortex\routing\RouterException("No route defined for URL: " . Application::$httpRequest->getRawUrl());
 
+        Application::$httpRequest->setRoute($route);
         $dispatcher = new Dispatcher(Application::$httpRequest, Application::$httpResponse, $route);
         $dispatcher->dispatch();
     }
 
+    /**
+     * Echoing a Http Request
+     */
     public static function display() {
         Application::$httpResponse->send();
     }
 
     /**
-     * Loads class-loader path
+     * Initialize Spl Class Loader
      */
     private static function registerClassLoader() {
         require LIB_PATH . '/vortex/utils/SplClassLoader.php';

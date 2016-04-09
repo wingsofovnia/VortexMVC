@@ -1,17 +1,19 @@
 <?php
 /**
- * Project: rework-vortex
- * Author: superuser
+ * Project: VortexMVC
+ * Author: Illia Ovchynnikov
  * Date: 09-Apr-16
  * Time: 18:21
  */
 
 namespace vortex\routing;
 
-
 use vortex\http\Request;
-use vortex\utils\Config;
 
+/**
+ * Class Router is used to translate input URL to specific controller and action names using routing table.
+ * @package vortex\routing
+ */
 class Router {
     const ROUTER_CONFIG_SPLIT_DELIMITER = '/\s+/';
     const ROUTER_CONFIG_COMMENT_SYMBOL = '#';

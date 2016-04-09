@@ -8,7 +8,8 @@
 namespace vortex\mvc\view;
 
 /**
- * Class Layout
+ * Class Layout provides a reusable view skeleton over all controllers' actions
+ * @package vortex\mvc\view
  */
 class Layout extends View {
     private $content;

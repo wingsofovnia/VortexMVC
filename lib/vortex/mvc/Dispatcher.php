@@ -1,13 +1,12 @@
 <?php
 /**
- * Project: rework-vortex
- * Author: superuser
+ * Project: VortexMVC
+ * Author: Illia Ovchynnikov
  * Date: 09-Apr-16
  * Time: 19:47
  */
 
 namespace vortex\mvc;
-
 
 use vortex\http\Request;
 use vortex\http\Response;
@@ -17,6 +16,10 @@ use vortex\mvc\view\View;
 use vortex\routing\Route;
 use vortex\utils\Config;
 
+/**
+ * Class Dispatcher manages MVC lifecycle based on routing information, fires controller's action and renders Views
+ * @package vortex\mvc
+ */
 class Dispatcher {
     private $request;
     private $response;

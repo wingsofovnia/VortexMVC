@@ -9,5 +9,6 @@ namespace vortex\mvc;
 
 /**
  * Class DispatcherException represents errors in Dispatcher class
+ * @package vortex\mvc
  */
 class DispatcherException extends \Exception {}
