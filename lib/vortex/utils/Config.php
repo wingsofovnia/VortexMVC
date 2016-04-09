@@ -19,8 +19,6 @@ require 'IniParser.php';
  * This class parses application ini settings file into OM
  */
 class Config extends IniParser {
-    const CACHE_NAMESPACE_TAG = 'config';
-    const CACHE_TAG = 'vf_config';
     const APPLICATION_SETTINGS_FILE = '/application.ini';
     private static $_instance;
 
@@ -45,19 +43,7 @@ class Config extends IniParser {
      */
     public function __construct($file = null) {
         parent::__construct($file);
-
-        /* Caching configs... */
-        $cache = StorageFactory::build(StorageFactory::FILE_DRIVER, array(
-            'namespace' => Config::CACHE_TAG,
-            'lifetime' => StorageInterface::UNLIMITED_LIFE_TIME
-        ));
-
-        $configCacheId = md5($file);
-        $this->config = $cache->load($configCacheId);
-        if (!$this->config) {
-            $this->config = $this->parse();
-            $cache->save($configCacheId, $this->config);
-        }
+        $this->config = $this->parse();
 
         /* Determining environment */
         $stage = $this->config->environment('production');

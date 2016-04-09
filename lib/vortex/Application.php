@@ -34,7 +34,6 @@ class Application {
         $backboneBootstrap = new Backbone($httpRequest, $httpResponse);
 
         /* Registered vertebrae */
-        $backboneBootstrap->addVertebra(new FacadeVertebra());
         $backboneBootstrap->addVertebra(new RouterVertebra());
         $backboneBootstrap->addVertebra(new MVCVertebra());
         $backboneBootstrap->run();
