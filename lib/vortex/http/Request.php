@@ -21,19 +21,10 @@ class Request {
     private $cookies;
     private $method;
 
-    /**
-     * Init constructor
-     */
     public function __construct() {
-        $_POST = array_map('trim', $_POST);
-        $this->post = $_POST;
-
-        $_GET = array_map('trim', $_GET);
-        $this->get = $_GET;
-
-        $_COOKIE = array_map('trim', $_COOKIE);
-        $this->cookies = $_COOKIE;
-
+        $this->post = array_map('trim', $_POST);
+        $this->get = array_map('trim', $_GET);
+        $this->cookies = array_map('trim', $_COOKIE);
         $this->method = $_SERVER['REQUEST_METHOD'];
     }
 
@@ -128,22 +119,20 @@ class Request {
     public function getHeader($header) {
         if (empty($header))
             throw new \InvalidArgumentException('An HTTP header name is required');
-        $temp = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
-        if (isset($_SERVER[$temp])) {
-            return $_SERVER[$temp];
+        $httpHeader = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
+        if (isset($_SERVER[$httpHeader])) {
+            return $_SERVER[$httpHeader];
         }
 
         if (function_exists('apache_request_headers')) {
-            $headers = apache_request_headers();
-            if (isset($headers[$header])) {
-                return $headers[$header];
-            }
+            $requestHeaders = apache_request_headers();
+            if (isset($requestHeaders[$header]))
+                return $requestHeaders[$header];
+
             $header = strtolower($header);
-            foreach ($headers as $key => $value) {
-                if (strtolower($key) == $header) {
+            foreach ($requestHeaders as $key => $value)
+                if (strtolower($key) == $header)
                     return $value;
-                }
-            }
         }
         return null;
     }
@@ -154,14 +143,6 @@ class Request {
      */
     public function isHTTPS() {
         return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
-    }
-
-    /**
-     * Gets a not cleaned URL
-     * @return string a request url
-     */
-    public function getRawUrl() {
-        return $_SERVER['REQUEST_URI'];
     }
 
     /**
@@ -178,5 +159,13 @@ class Request {
         if (strlen($url) == 0)
             return '\\';
         return strtolower($url);
+    }
+
+    /**
+     * Gets a not cleaned URL
+     * @return string a request url
+     */
+    public function getRawUrl() {
+        return $_SERVER['REQUEST_URI'];
     }
 }
