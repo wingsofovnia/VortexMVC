@@ -20,4 +20,8 @@ class IndexController extends Controller {
     public function raw() {
         $this->response->body("Hello! It's a raw response. Layouting was skipped coz I dont return a View object. I'm useful for AJAX :)");
     }
+
+    public function hello() {
+        return "Hello!";
+    }
 }

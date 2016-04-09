@@ -55,6 +55,8 @@ class Dispatcher {
         }
 
         $controllerObj->postDispatch();
-        $this->response->appendBody($actionResult);
+
+        if ($actionResult)
+            $this->response->appendBody($actionResult);
     }
 } 
