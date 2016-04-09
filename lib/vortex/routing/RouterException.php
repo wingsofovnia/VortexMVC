@@ -5,7 +5,7 @@
  * Date: 19-May-14
  */
 
-namespace vortex\http;
+namespace vortex\routing;
 
 /**
  * Class ResponseException represents errors in Response object

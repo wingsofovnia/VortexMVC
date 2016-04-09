@@ -1,44 +1,59 @@
 <?php
 /**
- * Project: VortexMVC
- * Author: Illia Ovchynnikov
- * Date: 19-May-14
+ * Project: rework-vortex
+ * Author: superuser
+ * Date: 09-Apr-16
+ * Time: 19:24
  */
 
 namespace vortex;
-use vortex\backbone\Backbone;
-use vortex\backbone\vertebrae\FacadeVertebra;
-use vortex\backbone\vertebrae\MVCVertebra;
-use vortex\backbone\vertebrae\RouterVertebra;
+
+
+use vortex;
 use vortex\http\Request;
 use vortex\http\Response;
+use vortex\mvc\Dispatcher;
+use vortex\routing\Route;
+use vortex\routing\Router;
 use vortex\utils\Logger;
 
-/**
- * Class Application
- * This one is an engine and class loader and configurator.
- * Class controls an output, ask Router class for path and
- * starts particular controller's action.
- */
 class Application {
+    const ROUTES_FILE_NAME = 'routes.cfg';
+
+    private static $httpRequest;
     /**
-     * Runs the application
+     * @var Response
      */
-    public static function run() {
+    private static $httpResponse;
+    /**
+     * @var Router
+     */
+    private static $router;
+
+    public static function init() {
         Application::registerClassLoader();
         Application::registerHandlers();
-        $httpRequest = new Request();
-        $httpResponse = new Response();
 
-        /* Running backbone */
-        $backboneBootstrap = new Backbone($httpRequest, $httpResponse);
+        Application::$httpRequest = new Request();
+        Application::$httpResponse = new Response();
 
-        /* Registered vertebrae */
-        $backboneBootstrap->addVertebra(new RouterVertebra());
-        $backboneBootstrap->addVertebra(new MVCVertebra());
-        $backboneBootstrap->run();
+        Application::$router = new Router();
+        $routesFile = new \SplFileObject(APP_PATH . DIRECTORY_SEPARATOR . self::ROUTES_FILE_NAME);
+        Application::$router->parseRules($routesFile, true);
+    }
 
-        $httpResponse->send();
+    public static function dispatch() {
+        /** @var $route Route */
+        $route = Application::$router->route(Application::$httpRequest);
+        if ($route === NULL)
+            throw new vortex\routing\RouterException("No route defined for URL: " . Application::$httpRequest->getRawUrl());
+
+        $dispatcher = new Dispatcher(Application::$httpRequest, Application::$httpResponse, $route);
+        $dispatcher->dispatch();
+    }
+
+    public static function display() {
+        Application::$httpResponse->send();
     }
 
     /**
@@ -64,4 +79,4 @@ class Application {
             Logger::error($code . ' : ' . $message . "\n" . $file . ' at line ' . $line);
         });
     }
-}
+} 

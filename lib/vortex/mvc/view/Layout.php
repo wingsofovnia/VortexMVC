@@ -6,53 +6,40 @@
  */
 
 namespace vortex\mvc\view;
-use vortex\utils\Config;
 
 /**
  * Class Layout
  */
 class Layout extends View {
-    const LAYOUT_SCRIPTS_FOLDER = '/views/layouts/';
-
     private $content;
-    private $isLayout;
+    private $isLayout = true;
     private $layouts = array();
     private $currentLayout;
 
-    /**
-     * Wraps a view with layout
-     * @param View|string $content a content
-     * @throws \UnexpectedValueException
-     * @throws \InvalidArgumentException
-     * @internal param string $name a name of a view template
-     */
-    public function __construct($content) {
-        if ($content instanceof View)
-            $content = $content->render();
+    public function __construct(View $view, $layouts, $currentLayout = NULL) {
+        $this->content = $view->render();
 
-        $this->content = $content;
+        foreach ($layouts as $layout) {
+            $layoutPath = $this->locateTemplate($layout);
+            if (!file_exists($layoutPath))
+                throw new \InvalidArgumentException("Can't locate layout " . $layout . " in " . $layoutPath);
 
-        $this->scripts = APPLICATION_PATH . Layout::LAYOUT_SCRIPTS_FOLDER;
+            $this->layouts[] = $layout;
+        }
 
-        $config = Config::getInstance();
-        $this->isLayout = $config->view->layout->enabled(false);
+        if (!empty($currentLayout)) {
+            $currentLayoutPath = $this->locateTemplate($currentLayout);
+            if (!file_exists($currentLayoutPath))
+                throw new \InvalidArgumentException("Bad current layout param. File doesn't exist.");
 
-        if ($this->isLayout) {
-            $templates = $config->view->layout->templates;
-
-            for ($i = 0; $i < count($templates); $i++) {
-                $layout = $this->getTemplatePath($templates[$i]);
-
-                if (file_exists($layout))
-                    $this->layouts[] = $templates[$i];
-            }
-
-            if (count($this->layouts) == 0)
-                throw new \UnexpectedValueException("No valid layouts were found in config");
-
-            $this->setCurrentLayout($config->view->layout->default);
+            $this->setCurrentLayout($currentLayout);
         }
     }
+
+    protected function locateTemplate($template) {
+        return APP_LAYOUTS_PATH . DIRECTORY_SEPARATOR . strtolower($template) . '.' . View::TEMPLATE_POSTFIX;
+    }
+
 
     /**
      * Disables layouts
@@ -69,20 +56,20 @@ class Layout extends View {
     }
 
     /**
-     * Renders a layout
-     * @return string layout content
-     */
-    public function render() {
-        $path = $this->getTemplatePath($this->getCurrentLayout());
-        return $this->ob_include($path);
-    }
-
-    /**
      * Checks if layout system is enabled
      * @return bool
      */
     public function isEnabled() {
         return $this->isLayout;
+    }
+
+    /**
+     * Renders a layout
+     * @return string layout content
+     */
+    public function render() {
+        $path = $this->locateTemplate($this->getCurrentLayout());
+        return $this->ob_include($path);
     }
 
     /**
@@ -104,12 +91,12 @@ class Layout extends View {
     /**
      * Sets a layout to use
      * @param string $currentLayout
-     * @return bool if such layout was declared in config file
+     * @throws \InvalidArgumentException
      */
     public function setCurrentLayout($currentLayout) {
         if (!in_array($currentLayout, $this->layouts))
-            return false;
+            throw new \InvalidArgumentException("Unknown layout name. Expected = " . implode(", ", $this->layouts));
+
         $this->currentLayout = $currentLayout;
-        return true;
     }
 }

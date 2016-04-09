@@ -6,26 +6,24 @@
  */
 
 namespace vortex\mvc\view;
-use vortex\component\Widget;
+use vortex\mvc\controller\Widget;
 use vortex\utils\Config;
-use vortex\utils\Logger;
 
 /**
  * Class View
  * This class is responsible for web application view
  */
 class View {
-    const VIEW_SCRIPTS_FOLDER = '/views/templates/';
+    const TEMPLATE_POSTFIX = 'tpl';
+
     public $data;
-    protected $path;
-    protected $scripts;
+    protected $template;
 
     /**
-     * Init constuctor
+     * Init constructor
      */
     public function __construct() {
         $this->data = new \ArrayObject(array(), \ArrayObject::ARRAY_AS_PROPS);
-        $this->scripts = APPLICATION_PATH . View::VIEW_SCRIPTS_FOLDER;
     }
 
     /**
@@ -40,36 +38,35 @@ class View {
     }
 
     /**
-     * Change view script
+     * Sets template to render
      * @param string $template a template script
      * @throws ViewException
      * @return View a new view object
      */
     public function setTemplate($template) {
-        $script = $this->getTemplatePath(strtolower($template));
-        $this->path = $script;
+        $this->template = $this->locateTemplate($template);
     }
 
-    protected function getTemplatePath($view) {
-        $extension = Config::getInstance()->view->extension('tpl');
-        return $this->scripts . $view . '.' . $extension;
+    protected function locateTemplate($template) {
+        return APP_TEMPLATES_PATH . DIRECTORY_SEPARATOR . strtolower($template) . '.' . View::TEMPLATE_POSTFIX;
     }
 
     /**
      * Renders another view template
-     * @param string $view name of view template
+     * @param string $template name of view template
      * @param array $data addition data for view template
      * @return string rendered partial
      * @throws ViewException if partial doesn't exist
      */
-    public function partial($view, $data = array()) {
-        $path = $this->getTemplatePath($view);
+    public function partial($template, $data = array()) {
+        $path = $this->locateTemplate($template);
 
         if (!is_file($path))
             throw new ViewException('Partial #{' . $path . '} doesn\'t exist!');
-        foreach ($data as $key => $value) {
+
+        foreach ($data as $key => $value)
             $this->data->$key = $value;
-        }
+
         return $this->ob_include($path);
     }
 
@@ -95,13 +92,14 @@ class View {
      */
     public function widget($widget) {
         $widget = ucfirst(strtolower($widget));
-        $widget = 'application\controllers\\widgets\\' . $widget . 'Widget';
+        $widget = APP_WIDGET_NAMESPACE . $widget . APP_WIDGET_POSTFIX;
         if (!class_exists($widget))
             throw new ViewException('Widget #{' . $widget . '} does\'t exists!');
+
         /** @var $widgetObj Widget */
         $widgetObj = new $widget();
-        $widgetObj->draw();
-        return $widgetObj->getView()->render();
+        $view = $widgetObj->draw();
+        return $view->render();
     }
 
     /**
@@ -110,10 +108,10 @@ class View {
      * @return string rendered view
      */
     public function render() {
-        if (!file_exists($this->path))
-            throw new ViewException('View #{' . $this->path . '} don\'t exists!');
+        if (!file_exists($this->template))
+            throw new ViewException('View #{' . $this->template . '} don\'t exists!');
 
-        return $this->ob_include($this->path);
+        return $this->ob_include($this->template);
     }
 
     /**
@@ -130,7 +128,7 @@ class View {
     public function setData($data) {
         if (empty($data))
             throw new \InvalidArgumentException('Param $data should be not empty!');
+
         $this->data = $data;
     }
-
 }

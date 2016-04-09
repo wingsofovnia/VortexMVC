@@ -138,11 +138,19 @@ class Response {
     }
 
     /**
-     * Sets a body of a http packet
+     * Appends data to the http body
      * @param string $body a body value
      */
     public function appendBody($body) {
         $this->body = $this->body . (string)$body;
+    }
+
+    /**
+     * Sets a body of a http packet
+     * @param string $body a body value
+     */
+    public function body($body) {
+        $this->body = (string)$body;
     }
 
     /**

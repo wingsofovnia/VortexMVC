@@ -29,11 +29,6 @@ abstract class Controller {
     protected $response;
 
     /**
-     * @var \vortex\utils\Config
-     */
-    protected $config;
-
-    /**
      * Init constructor
      * @param Request $request a request wrapper
      * @param Response $response a response wrapper
@@ -41,12 +36,11 @@ abstract class Controller {
     public final function __construct($request, $response) {
         $this->request = $request;
         $this->response = $response;
-        $this->config = Config::getInstance();
     }
 
-    /**
-     * A child controller quasi-constructor
-     */
-    public function init() {
+    public function preDispatch() {
+    }
+
+    public function postDispatch() {
     }
 }

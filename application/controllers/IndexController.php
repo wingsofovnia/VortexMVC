@@ -16,4 +16,8 @@ class IndexController extends Controller {
         $view->data->firstWords = 'Hello World! It\'s a indexAction!';
         return $view;
     }
+
+    public function raw() {
+        $this->response->body("Hello! It's a raw response. Layouting was skipped coz I dont return a View object. I'm useful for AJAX :)");
+    }
 }

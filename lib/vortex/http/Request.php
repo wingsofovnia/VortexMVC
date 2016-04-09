@@ -6,6 +6,7 @@
  */
 
 namespace vortex\http;
+use vortex\utils\Config;
 
 /**
  * Class Vortex_Request implements a wrapper of HTTP Request with additional,
@@ -16,9 +17,6 @@ class Request {
     private $post;
     private $cookies;
     private $method;
-
-    private $controller;
-    private $action;
     private $params;
 
     /**
@@ -174,40 +172,18 @@ class Request {
     }
 
     /**
-     * Gets a name of controller parsed from url
-     * @return string controller's name
+     * Gets clean URL without HOST name and special chars
+     * @return string a cleaned request url
      */
-    public function getController() {
-        return $this->controller;
-    }
+    public function getURL() {
+        $url = utf8_decode(urldecode(($this->getRawUrl())));
+        $subPath = Config::getInstance()->application->subpath('');
 
-    /**
-     * Sets a name of controller
-     * @param string $controller
-     * @throws \InvalidArgumentException if param $controller is empty
-     */
-    public function setController($controller) {
-        if (empty($controller))
-            throw new \InvalidArgumentException('Param $controller should be not empty!');
-        $this->controller = $controller;
-    }
-
-    /**
-     * Sets a name of action
-     * @param string $action
-     * @throws \InvalidArgumentException if param $action is empty
-     */
-    public function setAction($action) {
-        if (empty($action))
-            throw new \InvalidArgumentException('Param $action should be not empty!');
-        $this->action = $action;
-    }
-
-    /**
-     * Gets a name of action parsed from url
-     * @return string action's name
-     */
-    public function getAction() {
-        return $this->action;
+        if (strlen($subPath) > 0 && substr($url, 0, strlen($subPath)) == $subPath)
+            $url = substr($url, strlen($subPath));
+        $url = preg_replace('/[^A-Za-z0-9\-\/]/', '', $url);
+        if (strlen($url) == 0)
+            return '\\';
+        return strtolower($url);
     }
 }

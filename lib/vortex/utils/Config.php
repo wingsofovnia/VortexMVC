@@ -31,7 +31,7 @@ class Config extends IniParser {
      */
     public static function getInstance() {
         if (is_null(self::$_instance)) {
-            self::$_instance = new self(APPLICATION_PATH . Config::APPLICATION_SETTINGS_FILE);
+            self::$_instance = new self(APP_PATH . Config::APPLICATION_SETTINGS_FILE);
         }
         return self::$_instance->config;
     }
